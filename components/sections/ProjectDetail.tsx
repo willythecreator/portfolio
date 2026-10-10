@@ -1,0 +1,100 @@
+'use client'
+
+import { useEffect, useCallback } from 'react'
+import { PROJECTS } from '@/lib/data/projects'
+import { useFrame } from '@/lib/FrameTicker'
+
+interface ProjectDetailProps {
+  slug: string
+  onBack: () => void
+}
+
+export default function ProjectDetail({ slug, onBack }: ProjectDetailProps) {
+  const project = PROJECTS.find(p => p.slug === slug)
+  const frame = useFrame()
+
+  const hasAnimation = project?.asciiArtFrames && project.asciiArtFrames.length > 0
+  const currentFrame = hasAnimation ? frame % project!.asciiArtFrames!.length : 0
+
+  const handleKey = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'ArrowLeft') {
+      e.preventDefault()
+      onBack()
+    }
+  }, [onBack])
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [handleKey])
+
+  if (!project) {
+    return (
+      <div className="section">
+        <div className="section-title">PROJECT NOT FOUND</div>
+        <div className="back-link" onClick={onBack}>{'< cd /back  [ESC]'}</div>
+      </div>
+    )
+  }
+
+  const asciiContent = hasAnimation
+    ? project.asciiArtFrames![currentFrame].join('\n')
+    : null
+
+  const infoPanel = (
+    <div className="project-detail-info">
+      <div className="project-detail-name">{project.name}</div>
+      <div className="project-detail-meta">
+        Category: <span>{project.category}</span>
+      </div>
+      <div className="project-detail-meta">
+        Tech: <span>{project.tech.join(', ')}</span>
+      </div>
+
+      <div className="project-detail-desc">
+        {project.longDescription}
+      </div>
+
+      {project.github ? (
+        <div className="project-detail-links">
+          <a
+            className="project-link"
+            href={project.github}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            [GitHub]
+          </a>
+        </div>
+      ) : (
+        <div className="project-detail-locked">
+          [ LOCKED ] Repository in construction — source is private.
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="section">
+      <div className="section-header">
+        <div className="section-title">╔══ {project.name.toUpperCase().slice(0, 40)} ══╗</div>
+        <div className="section-divider">╚{'═'.repeat(46)}╝</div>
+      </div>
+
+      {hasAnimation ? (
+        <div className="project-detail">
+          <div className="project-detail-ascii">
+            <pre className="ascii-art">{asciiContent}</pre>
+          </div>
+          {infoPanel}
+        </div>
+      ) : (
+        <div className="project-detail-single">
+          {infoPanel}
+        </div>
+      )}
+
+      <div className="back-link" onClick={onBack}>{'< cd /back  [ESC]'}</div>
+    </div>
+  )
+}
