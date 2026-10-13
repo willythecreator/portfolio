@@ -92,33 +92,9 @@ export default function ProjectsSection({ onBack, onSelectProject }: ProjectsSec
             <div className="project-card-tech">{project.tech.join(' / ')}</div>
             {!project.github && (
               <div className="project-lock">
-                <pre className="project-lock-icon">{`        '.. 'c@$$$$$$$$$n' ' ...
-      .'"@@@@L{)1111111{Q@@@B^'
-       ^YUYXXzQwwwqwqwqqwQXYXYUY\`.
-       ^%%1{jnJZZZZZZZZZOUnj{)B8^.
-     ^%%{}d@x'        'u@p}(B8\` ...\`
-]$%111}dBr''..    ' c@p[){1@$].'
-]$%)($@{.. .'.       .1$@)(B@?
-?$%))$@{'..'..       .1$@)(B$?
-]$%))$@{.'...'       .)$@))B@?
-.  ]$%)($@{...'..       .1$@)(%$?
-...'.']@%1{@$\`.'...''.'.'.'1$B{)%$]..' .
-. QB$$@$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$@BC'
-..QBC??_+~~~~~~~~~~~~~+~~~~~+~+~~~~~+UBC
-.LBL]?______________________++>iii~+CBL ..
-. L@C]]+_++_+_+_++_+_+_+_+_+__+~~>i++CBC .'
-.LBL]?__________-}}}}{}-__+_+_++>i++JBL ..
-..LBL][[[_-______j@@@@@@f__+____+>i+~JBC .'
-. L@C][[[________j@@@@@$f____+_++_+++JBL ..
-. LBC][][+_______j@$@$B$f________+__+JBL .'
-.LBL][][?]____+_-{{BB}{?_____+_+_+++JBC ..
-. L@C][][]]____+___?%8______+___+__++JBL .'
-.LBC][][]-____+__?%%_+__+____+_+_++JBC ..
-..LBL]][[][[]-_+_+_?%8__________+_+_+JBL .'
-. L@C][][][][-__+___++___+__+__+__+_~JBC ..
-..LBL][][][[][]?_____________________JBL .'
-''LBWbbbbkbkbkbbdbddbdddbdbdbdbbbbbbdMBC'..
-..Xkhkhhhhahhhhahhhhhahhhhhhhhhhhhhhkahv .'`}</pre>
+                <pre className="project-lock-icon">{`[ === ]
+[ |X| ]
+[ === ]`}</pre>
                 <div className="project-lock-msg">
                   <strong>[LOCKED]</strong> in construction
                 </div>
@@ -128,7 +104,7 @@ export default function ProjectsSection({ onBack, onSelectProject }: ProjectsSec
         ))}
       </div>
 
-      <div className="back-link" onClick={onBack}>{'< cd /back  [ESC]'}</div>
+      <div className="back-link" role="button" tabIndex={0} onClick={onBack} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onBack() } }}>{'< cd /back  [ESC]'}</div>
     </div>
   )
 }

@@ -14,7 +14,7 @@ export default function CRTShell({ children }: CRTShellProps) {
     <div className="bezel">
       <div className="power-led" style={{ opacity: ledOpacity }} />
       <div className="screen-outer">
-        <div className="screen-inner">
+        <div className="screen-inner crt-flicker">
           <div className="scanlines" />
           <div className="vignette" />
           <div className="content">

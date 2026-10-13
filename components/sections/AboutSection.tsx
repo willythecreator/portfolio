@@ -79,7 +79,7 @@ export default function AboutSection({ onBack }: AboutSectionProps) {
         {ABOUT.philosophy}
       </div>
 
-      <div className="back-link" onClick={onBack}>{'< cd /back  [ESC]'}</div>
+      <div className="back-link" role="button" tabIndex={0} onClick={onBack} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onBack() } }}>{'< cd /back  [ESC]'}</div>
     </div>
   )
 }

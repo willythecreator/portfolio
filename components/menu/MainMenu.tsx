@@ -32,7 +32,7 @@ const VIEW_MAP: Record<string, string> = {
   SYSTEM: 'neofetch',
 }
 
-const BANNER = ` █████╗ ██████╗  ██████╗██████╗ ██╗   ██╗████████╗███████╗
+  const BANNER = `█████╗ ██████╗  ██████╗██████╗ ██╗   ██╗████████╗███████╗
 ██╔══██╗██╔══██╗██╔════╝██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝
 ███████║██████╔╝██║     ██████╔╝ ╚████╔╝    ██║   █████╗
 ██╔══██║██╔══██╗██║     ██╔══██╗  ╚██╔╝     ██║   ██╔══╝
@@ -63,7 +63,7 @@ export default function MainMenu({ onNavigate }: MainMenuProps) {
 
   return (
     <div className="menu">
-      <pre className="menu-banner">{BANNER}</pre>
+      <pre className="menu-banner pulse-glow">{BANNER}</pre>
 
       <div className="menu-header">
         <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'╔' + '═'.repeat(50) + '╗'}</span>
@@ -72,7 +72,7 @@ export default function MainMenu({ onNavigate }: MainMenuProps) {
         <span style={{ color: 'var(--arcbyte-green-dim)' }}>{spinChar}</span>
         <span>{' ArcByte OS v0.97 '}</span>
         <span style={{ color: 'var(--arcbyte-green-dim)' }}>{spinChar}</span>
-        <span>{' — NAVIGATE: ← ↑ ↓ → / WASD   SELECT: SPACE'}</span>
+        <span>{' — ←↑↓→/WASD | SPACE/ENTER | TAP'}</span>
         <span style={{ color: 'var(--arcbyte-green-dim)' }}>{' ║'}</span>
         <br />
         <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'╚' + '═'.repeat(50) + '╝'}</span>
@@ -85,8 +85,16 @@ export default function MainMenu({ onNavigate }: MainMenuProps) {
             <div
               key={item.title}
               className={`menu-item ${focused ? 'focused' : ''}`}
+              role="button"
+              tabIndex={0}
               onClick={() => onNavigate(VIEW_MAP[item.title])}
               onMouseEnter={() => nav.setFocused(i)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onNavigate(VIEW_MAP[item.title])
+                }
+              }}
             >
               <div className="menu-item-top">
                 {focused ? '┌' : '├'}{'─'.repeat(20)}{focused ? '┐' : '┤'}

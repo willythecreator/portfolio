@@ -14,9 +14,9 @@ interface TermLine {
 
 export default function Terminal({ onBack }: TerminalProps) {
   const [lines, setLines] = useState<TermLine[]>([
-    { type: 'success', text: 'ArcByte OS Terminal v0.97' },
-    { type: 'output', text: 'Type "help" for available commands.\n' },
-  ])
+        { type: 'success', text: 'ArcByte OS Terminal v0.97' },
+        { type: 'output', text: 'Type "help" to list available commands.\n' },
+      ])
   const [input, setInput] = useState('')
   const [cwd, setCwd] = useState('/')
   const [history, setHistory] = useState<string[]>([])
@@ -112,7 +112,10 @@ export default function Terminal({ onBack }: TerminalProps) {
         const segments = targetPath.split('/').filter(Boolean)
         const resolved: string[] = []
         for (const seg of segments) {
-          if (seg === '..') { resolved.pop(); continue }
+          if (seg === '..') {
+            if (resolved.length > 0) resolved.pop()
+            continue
+          }
           if (seg === '.') continue
           resolved.push(seg)
         }
@@ -121,7 +124,7 @@ export default function Terminal({ onBack }: TerminalProps) {
         if (!node || node.type !== 'dir') {
           addLines({ type: 'error', text: `cd: ${args[0]}: No such file or directory` })
         } else {
-          setCwd(normalized)
+          setCwd(normalized || '/')
         }
         break
       }

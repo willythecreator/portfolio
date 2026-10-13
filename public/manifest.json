@@ -1,0 +1,15 @@
+{
+  "name": "ArcByte OS",
+  "short_name": "ArcByte OS",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#000a02",
+  "background_color": "#000a02",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ]
+}

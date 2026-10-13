@@ -36,12 +36,18 @@ function AppContent() {
   const [state, setState] = useState<ViewState>({ view: 'boot' })
   const nav = useNav()
 
-  const navigate = (view: string, data?: unknown) => {
+  const navigate = (
+    view: string,
+    data?: unknown
+  ) => {
     nav.setFocused(0)
     if (view === 'project-detail' && typeof data === 'string') {
       setState({ view: 'project-detail', slug: data })
     } else {
-      setState({ view: view as Exclude<ViewState, { view: 'project-detail' }>['view'] })
+      const allowedViews: Array<ViewState['view']> = ['boot','scan','menu','about','projects','games','space-invaders','tetris','pac-man','terminal','neofetch']
+      if (allowedViews.includes(view as ViewState['view'])) {
+        setState({ view: view as Exclude<ViewState, { view: 'project-detail' }>['view'] })
+      }
     }
   }
 
@@ -103,7 +109,7 @@ function AppContent() {
         {state.view === 'neofetch' && (
           <>
             <Neofetch />
-            <div className="back-link" onClick={goBack}>{'< cd /back  [ESC]'}</div>
+            <div className="back-link" role="button" tabIndex={0} onClick={goBack} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goBack() } }}>{'< cd /back  [ESC]'}</div>
           </>
         )}
       </CRTShell>

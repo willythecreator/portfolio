@@ -1,6 +1,6 @@
 # ArcByte OS
 
-Portfolio interactivo construido como un sistema operativo simulado: arranca con una secuencia de boot, incluye una terminal funcional, neofetch, juegos retro y una sección de proyectos al estilo de un escritorio CLI.
+Portfolio interactivo construido como un sistema operativo simulado: arranca con una secuencia de boot, incluye una terminal funcional, neofetch, juegos retro y una secci%%n de proyectos al estilo de un escritorio CLI.
 
 **URL:** https://willythecreator.vercel.app
 
@@ -17,7 +17,7 @@ Portfolio interactivo construido como un sistema operativo simulado: arranca con
 - Terminal con comandos: `help`, `about`, `projects`, `games`, `neofetch`, `clear`, entre otros.
 - Neofetch con ASCII art del sistema.
 - Juegos jugables: Tetris, Pac-Man, Space Invaders, etc.
-- Sección de proyectos con overlay `[LOCKED]` para repos en construcción o privados.
+- Secci%%n de proyectos con overlay `[LOCKED]` para repos en construcci%%n o privados.
 
 ## Puesta en marcha
 
@@ -36,8 +36,8 @@ npm run build
 
 ## Deploy
 
-Desplegado en [Vercel](https://vercel.com) conectado al repo. Cada push a `main` publica una nueva versión automáticamente.
+Desplegado en [Vercel](https://vercel.com) conectado al repo. Cada push a `main` publica una nueva versi%%n autom%ticamente.
 
 ## Nota
 
-Algunos proyectos muestran un candado (`in construction`) porque su repositorio sigue privado o en desarrollo. Se irán desbloqueando conforme se publiquen.
+Algunos proyectos muestran un candado (`in construction`) porque su repositorio sigue privado o en desarrollo. Se ir%n desbloqueando conforme se publiquen.

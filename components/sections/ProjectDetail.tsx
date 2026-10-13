@@ -32,7 +32,7 @@ export default function ProjectDetail({ slug, onBack }: ProjectDetailProps) {
     return (
       <div className="section">
         <div className="section-title">PROJECT NOT FOUND</div>
-        <div className="back-link" onClick={onBack}>{'< cd /back  [ESC]'}</div>
+      <div className="back-link" role="button" tabIndex={0} onClick={onBack} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onBack() } }}>{'< cd /back  [ESC]'}</div>
       </div>
     )
   }
@@ -42,7 +42,7 @@ export default function ProjectDetail({ slug, onBack }: ProjectDetailProps) {
     : null
 
   const infoPanel = (
-    <div className="project-detail-info">
+          <div className="project-detail-info frame frame-focused" data-label="[ DETAILS ]">
       <div className="project-detail-name">{project.name}</div>
       <div className="project-detail-meta">
         Category: <span>{project.category}</span>
@@ -83,7 +83,7 @@ export default function ProjectDetail({ slug, onBack }: ProjectDetailProps) {
 
       {hasAnimation ? (
         <div className="project-detail">
-          <div className="project-detail-ascii">
+          <div className="project-detail-ascii frame frame-focused" data-label="[ VISUALIZATION ]">
             <pre className="ascii-art">{asciiContent}</pre>
           </div>
           {infoPanel}

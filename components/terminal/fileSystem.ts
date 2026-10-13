@@ -215,5 +215,5 @@ export function resolvePath(fs: FSNode, path: string): FSNode | null {
 }
 
 export function getPwd(cwd: string): string {
-  return cwd === '/' ? '~' : `~${cwd}`
+  return cwd === '/' ? '/' : cwd
 }
