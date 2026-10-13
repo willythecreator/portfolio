@@ -42,17 +42,27 @@ function AppContent() {
   ) => {
     nav.setFocused(0)
     if (view === 'project-detail' && typeof data === 'string') {
+      try {
+        history.pushState({ view: 'project-detail', slug: data }, '', '#projects')
+      } catch {}
       setState({ view: 'project-detail', slug: data })
     } else {
       const allowedViews: Array<ViewState['view']> = ['boot','scan','menu','about','projects','games','space-invaders','tetris','pac-man','terminal','neofetch']
       if (allowedViews.includes(view as ViewState['view'])) {
-        setState({ view: view as Exclude<ViewState, { view: 'project-detail' }>['view'] })
+        const target = view as Exclude<ViewState, { view: 'project-detail' }>['view']
+        if (target === 'menu') {
+          try { history.pushState({ view: 'menu' }, '', '#menu') } catch {}
+        } else if (target !== 'boot' && target !== 'scan') {
+          try { history.pushState({ view: target }, '', `#${target}`) } catch {}
+        }
+        setState({ view: target })
       }
     }
   }
 
   const goBack = () => {
     nav.setFocused(0)
+    try { history.back() } catch {}
     setState({ view: 'menu' })
   }
 
@@ -63,6 +73,15 @@ function AppContent() {
       document.body.style.overflow = ''
     }
   }, [state.view])
+
+  useEffect(() => {
+    const onPopState = () => {
+      nav.setFocused(0)
+      setState({ view: 'menu' })
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [nav])
 
   return (
     <main>
