@@ -1,4 +1,5 @@
 import { blackholeArt } from '@/lib/ascii-art/blackhole'
+import { chessArt, chessDelays } from '@/lib/ascii-art/chess'
 
 export interface Project {
   slug: string
@@ -9,6 +10,7 @@ export interface Project {
   tech: string[]
   github?: string
   asciiArtFrames?: string[][]
+  asciiFrameDelays?: number[]
 }
 
 export type ProjectCategory =
@@ -265,6 +267,8 @@ export const PROJECTS: Project[] = [
       'Full chess engine with move generation, evaluation, and UCI protocol support. Uses alpha-beta pruning with iterative deepening and transposition tables.',
     tech: ['Python'],
     github: 'https://github.com/willythecreator/Chess-Game-Engine-in-Python',
+    asciiArtFrames: chessArt,
+    asciiFrameDelays: chessDelays,
   },
   {
     slug: 'chess-c',

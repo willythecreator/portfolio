@@ -28,7 +28,11 @@ if (!mode || !['text', 'image', 'shade', 'video'].includes(mode)) {
   console.error()
   console.error('Video mode:')
   console.error('  Extracts frames from a video and converts to ASCII art.')
+  console.error('  Animated GIF/WebP inputs keep every frame (passthrough); videos sample at <fps>.')
+  console.error('  Add the "invert" flag to flip luminance (bright <-> dark).')
+  console.error('  Tune with gain=<n> (contrast multiplier) and offset=<n> (0-255 brightness lift).')
   console.error('  Example: node scripts/ascii-gen.mjs video source-images/clip.mp4 80 44 10 clip')
+  console.error('  Example: node scripts/ascii-gen.mjs video source-images/board.gif 78 35 5 board invert')
   console.error()
   console.error('Available figlet fonts: run with --fonts to list')
   process.exit(1)
@@ -141,16 +145,25 @@ async function videoMode() {
   const COLS = parseInt(colsArg, 10)
   const ROWS = parseInt(rowsArg, 10)
   const FPS = parseInt(fpsArg, 10)
+  const INVERT = args.includes('invert')
+  const gainArg = args.find(a => a.startsWith('gain='))
+  const offsetArg = args.find(a => a.startsWith('offset='))
+  const GAIN = gainArg ? parseFloat(gainArg.split('=')[1]) : 1
+  const OFFSET = offsetArg ? parseFloat(offsetArg.split('=')[1]) : 0
   const outName = outNameArg || path.basename(inputPath, path.extname(inputPath))
   const RAMP = ' .,:;i1tfLCG08@'
 
   const tmpDir = path.resolve('scripts/.tmp-frames')
   fs.mkdirSync(tmpDir, { recursive: true })
 
+  const isAnimatedImage = /\.(gif|webp)$/i.test(inputPath)
+  const vf = isAnimatedImage ? `scale=${COLS}:${ROWS}` : `fps=${FPS},scale=${COLS}:${ROWS}`
+  const fpsMode = isAnimatedImage ? '-fps_mode passthrough ' : ''
+
   try {
     const { execSync } = await import('child_process')
     execSync(
-      `ffmpeg -i "${inputPath}" -vf fps=${FPS} -vf "scale=${COLS}:${ROWS}" "${tmpDir}/frame-%04d.png" -y`,
+      `ffmpeg -i "${inputPath}" ${fpsMode}-vf "${vf}" "${tmpDir}/frame-%04d.png" -y`,
       { stdio: 'inherit' }
     )
 
@@ -168,7 +181,11 @@ async function videoMode() {
         let line = ''
         for (let x = 0; x < info.width; x++) {
           const idx = y * info.width + x
-          const v = data[idx] / 255
+          let v = data[idx] / 255
+          if (INVERT) v = 1 - v
+          v = v * GAIN + OFFSET / 255
+          if (v < 0) v = 0
+          if (v > 1) v = 1
           const charIndex = Math.round(v * (RAMP.length - 1))
           line += RAMP[charIndex]
         }
@@ -177,22 +194,36 @@ async function videoMode() {
       allFrames.push(lines)
     }
 
-    writeOutput(allFrames, outName, `video ${path.basename(inputPath)} (${frameFiles.length} frames @ ${FPS}fps)`)
+    let frameDelays = null
+    if (isAnimatedImage) {
+      const meta = await sharp(inputPath, { animated: true }).metadata()
+      frameDelays = meta.delay || null
+    }
+
+    writeOutput(
+      allFrames,
+      outName,
+      `video ${path.basename(inputPath)} (${frameFiles.length} frames${isAnimatedImage ? '' : ` @ ${FPS}fps`}${INVERT ? ', inverted' : ''})`,
+      '',
+      frameDelays
+    )
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true })
   }
 }
 
 // ── Shared output ────────────────────────────────────────────────────────────
-function writeOutput(data, name, sourceDesc, filePrefix = '') {
+function writeOutput(data, name, sourceDesc, filePrefix = '', frameDelays = null) {
   const outPath = path.join(OUT_DIR, `${filePrefix}${name}.ts`)
-  const varName = `${name.replace(/-([a-z])/g, (_, c) => c.toUpperCase())}Art`
+  const varBase = `${name.replace(/-([a-z])/g, (_, c) => c.toUpperCase())}`
+  const varName = `${varBase}Art`
   const isArray = Array.isArray(data[0])
 
   const fileContent =
     `// Auto-generated from ${sourceDesc} — regenerate, don't hand-edit.\n` +
     `// node scripts/ascii-gen.mjs ${args.join(' ')}\n\n` +
-    `export const ${varName}: ${isArray ? 'string[][]' : 'string[]'} = ${JSON.stringify(data, null, 2)}\n`
+    `export const ${varName}: ${isArray ? 'string[][]' : 'string[]'} = ${JSON.stringify(data, null, 2)}\n` +
+    (frameDelays && frameDelays.length ? `\nexport const ${varBase}Delays: number[] = ${JSON.stringify(frameDelays)}\n` : '')
 
   fs.writeFileSync(outPath, fileContent)
 

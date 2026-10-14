@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { PROJECTS } from '@/lib/data/projects'
 import { useFrame } from '@/lib/FrameTicker'
 
@@ -13,8 +13,27 @@ export default function ProjectDetail({ slug, onBack }: ProjectDetailProps) {
   const project = PROJECTS.find(p => p.slug === slug)
   const frame = useFrame()
 
+  const [startFrame] = useState(frame)
+
   const hasAnimation = project?.asciiArtFrames && project.asciiArtFrames.length > 0
-  const currentFrame = hasAnimation ? frame % project!.asciiArtFrames!.length : 0
+  const currentFrame = (() => {
+    if (!hasAnimation) return 0
+    const frames = project!.asciiArtFrames!
+    const delays = project!.asciiFrameDelays
+    const n = frames.length
+    if (delays && delays.length === n) {
+      const total = delays.reduce((a, b) => a + b, 0)
+      if (total === 0) return 0
+      const elapsed = (Math.max(0, frame - startFrame) / 30) * 1000
+      let t = elapsed % total
+      for (let i = 0; i < n; i++) {
+        t -= delays[i]
+        if (t < 0) return i
+      }
+      return n - 1
+    }
+    return frame % n
+  })()
 
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'ArrowLeft') {
