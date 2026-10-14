@@ -66,16 +66,17 @@ export default function MainMenu({ onNavigate }: MainMenuProps) {
       <pre className="menu-banner pulse-glow">{BANNER}</pre>
 
       <div className="menu-header">
-        <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'╔' + '═'.repeat(50) + '╗'}</span>
+        <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'╔' + '═'.repeat(56) + '╗'}</span>
         <br />
         <span>{'║ '}</span>
         <span style={{ color: 'var(--arcbyte-green-dim)' }}>{spinChar}</span>
         <span>{' ArcByte OS v0.97 '}</span>
         <span style={{ color: 'var(--arcbyte-green-dim)' }}>{spinChar}</span>
         <span>{' — ←↑↓→/WASD | SPACE/ENTER | TAP'}</span>
+        <span>{' — MADE BY WILLY '}</span>
         <span style={{ color: 'var(--arcbyte-green-dim)' }}>{' ║'}</span>
         <br />
-        <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'╚' + '═'.repeat(50) + '╝'}</span>
+        <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'╚' + '═'.repeat(56) + '╝'}</span>
       </div>
 
       <div className="menu-grid">
