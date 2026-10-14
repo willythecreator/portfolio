@@ -681,11 +681,22 @@ body {
 }
 
 .project-lock-icon {
-  display: block;
-  width: clamp(28px, 13cqw, 42px);
-  height: auto;
-  margin: 0 0 4px;
-  filter: drop-shadow(0 0 4px rgba(255, 179, 71, 0.55));
+  --lock-cols: 32;
+  --lock-rows: 21;
+  margin: 0;
+  /* Fit to card: 88% of width (0.54em = Share Tech Mono advance) or 72% of height,
+     whichever is smaller, so the ASCII padlock scales with the card. */
+  font-size: min(
+    calc(88cqw / (var(--lock-cols) * 0.54)),
+    calc(72cqh / var(--lock-rows))
+  );
+  line-height: 1;
+  letter-spacing: 0;
+  font-family: var(--arcbyte-font);
+  color: var(--arcbyte-amber);
+  text-shadow: 0 0 2px var(--arcbyte-amber);
+  white-space: pre;
+  overflow: hidden;
 }
 
 .project-lock-msg {
