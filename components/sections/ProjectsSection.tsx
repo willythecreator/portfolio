@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { PROJECTS, CATEGORIES, type ProjectCategory } from '@/lib/data/projects'
 import { useNav } from '@/lib/NavigationProvider'
-import { lockArt } from '@/lib/ascii-art/lock'
+import LockPixel from '@/components/icons/LockPixel'
 
 interface ProjectsSectionProps {
   onBack: () => void
@@ -93,7 +93,7 @@ export default function ProjectsSection({ onBack, onSelectProject }: ProjectsSec
             <div className="project-card-tech">{project.tech.join(' / ')}</div>
             {!project.github && (
               <div className="project-lock">
-                <pre className="project-lock-icon">{lockArt.join('\n')}</pre>
+                <LockPixel className="project-lock-icon" />
                 <div className="project-lock-msg">
                   <strong>[LOCKED]</strong> in construction
                 </div>
