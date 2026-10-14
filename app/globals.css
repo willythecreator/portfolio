@@ -397,6 +397,7 @@ body {
 }
 
 .menu-banner {
+  font-family: var(--arcbyte-font);
   font-size: 11px;
   line-height: 1.2;
   color: var(--arcbyte-green-dim);

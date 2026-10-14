@@ -3,6 +3,7 @@
 import { useEffect, useCallback } from 'react'
 import { useNav } from '@/lib/NavigationProvider'
 import { useSpin } from '@/lib/FrameTicker'
+import { arcbyteArt } from '@/lib/ascii-art/text-arcbyte'
 
 interface MenuItemData {
   icon: string
@@ -32,13 +33,6 @@ const VIEW_MAP: Record<string, string> = {
   SYSTEM: 'neofetch',
 }
 
-  const BANNER = `█████╗ ██████╗  ██████╗██████╗ ██╗   ██╗████████╗███████╗
-██╔══██╗██╔══██╗██╔════╝██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝
-███████║██████╔╝██║     ██████╔╝ ╚████╔╝    ██║   █████╗
-██╔══██║██╔══██╗██║     ██╔══██╗  ╚██╔╝     ██║   ██╔══╝
-██║  ██║██║  ██║╚██████╗██████╔╝   ██║      ██║   ███████╗
-╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═════╝    ╚═╝      ╚═╝   ╚══════╝`
-
 export default function MainMenu({ onNavigate }: MainMenuProps) {
   const nav = useNav()
   const total = ITEMS.length
@@ -63,7 +57,7 @@ export default function MainMenu({ onNavigate }: MainMenuProps) {
 
   return (
     <div className="menu">
-      <pre className="menu-banner pulse-glow">{BANNER}</pre>
+      <pre className="menu-banner pulse-glow">{arcbyteArt.join('\n')}</pre>
 
       <div className="menu-header">
         <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'╔' + '═'.repeat(56) + '╗'}</span>

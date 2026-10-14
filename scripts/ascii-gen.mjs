@@ -6,10 +6,11 @@ import path from 'path'
 const args = process.argv.slice(2)
 const mode = args[0]
 
-if (!mode || !['text', 'image', 'video'].includes(mode)) {
+if (!mode || !['text', 'image', 'shade', 'video'].includes(mode)) {
   console.error('Usage:')
   console.error('  node scripts/ascii-gen.mjs text  <word> <font> [output-name]')
   console.error('  node scripts/ascii-gen.mjs image <path> [cols] [rows] [invert] [output-name]')
+  console.error('  node scripts/ascii-gen.mjs shade <path> [cols] [rows] [output-name]')
   console.error('  node scripts/ascii-gen.mjs video <path> [cols] [rows] [fps] [output-name]')
   console.error()
   console.error('Text mode:')
@@ -19,6 +20,11 @@ if (!mode || !['text', 'image', 'video'].includes(mode)) {
   console.error('Image mode:')
   console.error('  Converts an image to ASCII art using sharp.')
   console.error('  Example: node scripts/ascii-gen.mjs image source-images/skull.jpg 60 34 invert skull')
+  console.error()
+  console.error('Shade mode:')
+  console.error('  Converts a (light-background) image to a solid ASCII-only glyph ramp " .#@".')
+  console.error('  Use for crisp icons that must align in strict monospace fonts.')
+  console.error('  Example: node scripts/ascii-gen.mjs shade source-images/lock-icon.png 32 21 lock')
   console.error()
   console.error('Video mode:')
   console.error('  Extracts frames from a video and converts to ASCII art.')
@@ -95,6 +101,38 @@ async function imageMode() {
   writeOutput(lines, outName, `image ${path.basename(inputPath)} (${COLS}x${ROWS}${INVERT ? ', inverted' : ''})`)
 }
 
+// ── Shade mode ───────────────────────────────────────────────────────────────
+async function shadeMode() {
+  const [, inputPath, colsArg = '32', rowsArg = '21', outNameArg] = args
+  if (!inputPath) { console.error('Error: provide an image path'); process.exit(1) }
+
+  const COLS = parseInt(colsArg, 10)
+  const ROWS = parseInt(rowsArg, 10)
+  const outName = outNameArg || path.basename(inputPath, path.extname(inputPath))
+  const RAMP = ' .#@'
+
+  const { data, info } = await sharp(inputPath)
+    .flatten({ background: '#000' })
+    .resize(COLS, ROWS, { fit: 'fill' })
+    .grayscale()
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+
+  const lines = []
+  for (let y = 0; y < ROWS; y++) {
+    let line = ''
+    for (let x = 0; x < COLS; x++) {
+      const idx = (y * info.width + x) * info.channels
+      const v = data[idx] / 255
+      line += RAMP[Math.round((1 - v) * (RAMP.length - 1))]
+    }
+    lines.push(line)
+  }
+
+  writeOutput(lines, outName, `image ${path.basename(inputPath)} (${COLS}x${ROWS}, shaded)`)
+}
+
 // ── Video mode ───────────────────────────────────────────────────────────────
 async function videoMode() {
   const [, inputPath, colsArg = '80', rowsArg = '44', fpsArg = '10', outNameArg] = args
@@ -166,5 +204,5 @@ function writeOutput(data, name, sourceDesc, filePrefix = '') {
 }
 
 // ── Run ──────────────────────────────────────────────────────────────────────
-const modes = { text: textMode, image: imageMode, video: videoMode }
+const modes = { text: textMode, image: imageMode, shade: shadeMode, video: videoMode }
 await modes[mode]()

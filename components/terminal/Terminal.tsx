@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createFileSystem, resolvePath, getPwd } from './fileSystem'
+import { arcbyteArt } from '@/lib/ascii-art/text-arcbyte'
 
 interface TerminalProps {
   onBack: () => void
@@ -186,11 +187,7 @@ export default function Terminal({ onBack }: TerminalProps) {
 
       case 'neofetch': {
         const nf = [
-          '   █████╗ ██████╗  ██████╗██████╗ ██╗   ██╗████████╗███████╗',
-          '  ██╔══██╗██╔══██╗██╔════╝██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝',
-          '  ███████║██████╔╝██║     ██████╔╝ ╚████╔╝    ██║   █████╗',
-          '  ██╔══██║██╔══██╗██║     ██╔══██╗  ╚██╔╝     ██║   ██╔══╝',
-          '  ██║  ██║██║  ██║╚██████╗██████╔╝   ██║      ██║   ███████╗',
+          ...arcbyteArt,
           '',
           '  OS:         ArcByte OS v0.97',
           '  Host:       Sector 7 — Grid 4491',
