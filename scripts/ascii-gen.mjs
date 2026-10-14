@@ -72,8 +72,10 @@ async function imageMode() {
   const RAMP = ' .,:;i1tfLCG08@'
 
   const { data, info } = await sharp(inputPath)
+    .flatten({ background: '#000' })
     .resize(COLS, ROWS, { fit: 'fill' })
     .grayscale()
+    .removeAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true })
 
@@ -81,7 +83,7 @@ async function imageMode() {
   for (let y = 0; y < ROWS; y++) {
     let line = ''
     for (let x = 0; x < COLS; x++) {
-      const idx = y * info.width + x
+      const idx = (y * info.width + x) * info.channels
       let v = data[idx] / 255
       if (INVERT) v = 1 - v
       const charIndex = Math.round(v * (RAMP.length - 1))
