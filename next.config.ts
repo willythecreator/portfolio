@@ -5,8 +5,11 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
+      // 'unsafe-inline' es necesario para los scripts inline de Next.js
+      // (bootstrap y datos de streaming self.__next_f.push); sin él la página
+      // no hidrata y sale en blanco.
       // 'wasm-unsafe-eval' es necesario para WebAssembly (js-dos / DOSBox).
-      "script-src 'self' 'wasm-unsafe-eval'",
+      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self'",
