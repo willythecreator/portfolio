@@ -12,6 +12,7 @@ import GamesSection from '@/components/sections/GamesSection'
 import SpaceInvaders from '@/components/games/SpaceInvaders'
 import Tetris from '@/components/games/Tetris'
 import PacMan from '@/components/games/PacMan'
+import Doom from '@/components/games/Doom'
 import Terminal from '@/components/terminal/Terminal'
 import { skullArt } from '@/lib/ascii-art/skull'
 import { rotateSkullArt } from '@/lib/ascii-art/rotate-skull'
@@ -29,6 +30,7 @@ type ViewState =
   | { view: 'space-invaders' }
   | { view: 'tetris' }
   | { view: 'pac-man' }
+  | { view: 'doom' }
   | { view: 'terminal' }
   | { view: 'neofetch' }
 
@@ -47,7 +49,7 @@ function AppContent() {
       } catch {}
       setState({ view: 'project-detail', slug: data })
     } else {
-      const allowedViews: Array<ViewState['view']> = ['boot','scan','menu','about','projects','games','space-invaders','tetris','pac-man','terminal','neofetch']
+      const allowedViews: Array<ViewState['view']> = ['boot','scan','menu','about','projects','games','space-invaders','tetris','pac-man','doom','terminal','neofetch']
       if (allowedViews.includes(view as ViewState['view'])) {
         const target = view as Exclude<ViewState, { view: 'project-detail' }>['view']
         if (target === 'menu') {
@@ -121,6 +123,9 @@ function AppContent() {
         )}
         {state.view === 'pac-man' && (
           <PacMan onBack={() => navigate('games')} />
+        )}
+        {state.view === 'doom' && (
+          <Doom onBack={() => navigate('games')} />
         )}
         {state.view === 'terminal' && (
           <Terminal onBack={goBack} />

@@ -862,6 +862,84 @@ body {
   color: var(--arcbyte-amber);
 }
 
+.doom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  animation: fadein 0.2s ease-in;
+}
+
+.doom-screen {
+  position: relative;
+  width: 100%;
+  max-width: min(1440px, calc((100vh - 140px) * 1.6));
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--arcbyte-border);
+  background: #000;
+  overflow: hidden;
+  container-type: inline-size;
+  isolation: isolate;
+  cursor: none;
+}
+
+.doom-player {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.doom-ascii {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  background: #000;
+  font-family: var(--arcbyte-font);
+  font-size: calc(100cqw / 320 / 0.54);
+  line-height: calc(100cqw * 0.625 / 108);
+  letter-spacing: 0;
+  font-variant-ligatures: none;
+  font-kerning: none;
+  white-space: pre;
+  overflow: hidden;
+  pointer-events: none;
+  text-shadow: none;
+}
+
+.doom-field {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.doom-status {
+  width: 100%;
+  max-width: 960px;
+  padding: 10px 12px;
+  border: 1px dashed var(--arcbyte-border);
+  background: rgba(51, 255, 102, 0.04);
+  color: var(--arcbyte-amber);
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.doom-controls {
+  font-size: 11px;
+  color: var(--arcbyte-green-dim);
+  text-align: center;
+  line-height: 1.6;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════ */
 /* SPACE INVADERS                                                           */
 /* ═══════════════════════════════════════════════════════════════════════════ */

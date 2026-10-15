@@ -24,4 +24,10 @@ export const GAMES: Game[] = [
     description: 'Navigate the maze, eat all dots, avoid the ghosts.',
     status: 'playable',
   },
+  {
+    id: 'doom',
+    name: 'DOOM',
+    description: 'Rip and tear. The 1993 shareware classic, running on DOSBox in your browser.',
+    status: 'playable',
+  },
 ]
