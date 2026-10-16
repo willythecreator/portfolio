@@ -8,8 +8,12 @@ const securityHeaders = [
       // 'unsafe-inline' es necesario para los scripts inline de Next.js
       // (bootstrap y datos de streaming self.__next_f.push); sin él la página
       // no hidrata y sale en blanco.
-      // 'wasm-unsafe-eval' es necesario para WebAssembly (js-dos / DOSBox).
-      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
+      // 'wasm-unsafe-eval' habilita la compilación de WebAssembly, pero NO
+      // cubre el eval()/new Function() de emulators.js de js-dos (glue de
+      // Emscripten + DOSBox). Sin 'unsafe-eval' Doom falla al arrancar.
+      // 'blob:' es necesario porque el AudioWorklet de js-dos se registra con
+      // addModule(blob:...) y los worklets los controla script-src.
+      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' 'unsafe-eval' blob:",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self'",
@@ -78,10 +82,8 @@ const securityHeaders = [
 // Promote directives to `securityHeaders` once reports are clean.
 const cspReportOnly = [
   "default-src 'self'",
-  "script-src 'self' 'wasm-unsafe-eval'",
-  // Intentionally no 'unsafe-inline' — Tailwind/js-dos noise is expected
-  // until the enforced policy is tightened.
-  "style-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' 'unsafe-inline' blob:",
+  "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
   "connect-src 'self'",
