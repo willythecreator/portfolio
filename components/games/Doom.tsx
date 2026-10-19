@@ -25,7 +25,7 @@ type Status = 'loading' | 'ready' | 'error'
 const COLS = 480
 const ROWS = 162
 const RAMP = " .,:;~-+=*oxX#%&@$8BWM"
-const GAMMA = 0.8
+const GAMMA = 0.55
 
 const LUT = new Uint8Array(256)
 for (let i = 0; i < 256; i++) {
@@ -111,9 +111,9 @@ export default function Doom({ onBack }: DoomProps) {
             const lev = LUT[lum | 0]
             chars[x] = RAMP[lev]
             const f = lev / (RAMP.length - 1)
-            fd[i] = 2 + 64 * f * f
-            fd[i + 1] = 18 + 237 * f
-            fd[i + 2] = 6 + 30 * f
+            fd[i] = 8 + 110 * f * f
+            fd[i + 1] = 32 + 223 * f
+            fd[i + 2] = 10 + 60 * f
             fd[i + 3] = 255
           }
           rows[y] = chars.join('')
@@ -197,7 +197,7 @@ export default function Doom({ onBack }: DoomProps) {
         </div>
       )}
       <div className="doom-controls">
-        D-PAD / ARROWS: move &middot; A / CTRL: fire &middot; B / SPACE: use &middot; C / SHIFT: run &middot; BKSP: back
+        D-PAD / ARROWS: menu &amp; move &middot; A / ENTER: select &middot; B / CTRL: fire &middot; C / SPACE: use &middot; START / ESC: menu (in game) &middot; BKSP: back
       </div>
       <TouchControls
         zone={{
@@ -208,9 +208,10 @@ export default function Doom({ onBack }: DoomProps) {
             { dir: 'down', key: 'ArrowDown' },
           ],
           actions: [
-            { key: 'Control', label: 'A', variant: 'a' },
-            { key: ' ', label: 'B', variant: 'b' },
-            { key: 'Shift', label: 'C', variant: 'c' },
+            { key: 'Enter', label: 'A', variant: 'a' },
+            { key: 'Control', label: 'B', variant: 'b' },
+            { key: ' ', label: 'C', variant: 'c' },
+            { key: 'Escape', label: 'START', variant: 'start' },
           ],
         }}
       />

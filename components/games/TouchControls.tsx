@@ -43,6 +43,19 @@ const KEY_CODE: Record<string, number> = {
   D: 68,
   S: 83,
   W: 87,
+  '1': 49,
+  '2': 50,
+  '3': 51,
+  '4': 52,
+  '5': 53,
+  '6': 54,
+  '7': 55,
+  '8': 56,
+  '9': 57,
+  y: 89,
+  n: 78,
+  Y: 89,
+  N: 78,
 }
 
 function dispatch(type: 'keydown' | 'keyup', key: string) {
@@ -294,6 +307,7 @@ function PixelDpad({ dirs }: { dirs: DpadKey[] }) {
           </span>
         ) : null
       )}
+      <div className="dpad-hub" />
     </div>
   )
 }
