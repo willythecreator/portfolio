@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
+import TouchControls from './TouchControls'
 
 interface PacManProps { onBack: () => void }
 
@@ -123,6 +124,10 @@ function moveEnt(e: Ent, spd: number): boolean {
 export default function PacMan({ onBack }: PacManProps) {
   const ref = useRef<HTMLCanvasElement>(null)
   const gRef = useRef<G | null>(null)
+  const onBackRef = useRef(onBack)
+  useEffect(() => {
+    onBackRef.current = onBack
+  }, [onBack])
 
   const initGame = useCallback(() => {
     const s: G = {
@@ -150,7 +155,13 @@ export default function PacMan({ onBack }: PacManProps) {
     const ctx = cvs.getContext('2d')!
     const s = initGame()
 
-    const kd = (e: KeyboardEvent) => { s.keys[e.key] = true }
+    const kd = (e: KeyboardEvent) => {
+      s.keys[e.key] = true
+      if (e.key === 'Backspace') {
+        e.preventDefault()
+        onBackRef.current()
+      }
+    }
     const ku = (e: KeyboardEvent) => { s.keys[e.key] = false }
     const prevent = (e: KeyboardEvent) => {
       if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault()
@@ -387,8 +398,12 @@ export default function PacMan({ onBack }: PacManProps) {
     }
     raf = requestAnimationFrame(loop)
 
+    const restart = () => {
+      Object.assign(s, initGame())
+      gRef.current = s
+    }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && (s.over || s.won)) { s.over = false; s.won = false; initGame() }
+      if (e.key === 'Enter' && (s.over || s.won)) restart()
     }
     window.addEventListener('keydown', onKey)
 
@@ -402,10 +417,23 @@ export default function PacMan({ onBack }: PacManProps) {
   }, [initGame])
 
   return (
-    <div className="space-invaders">
-      <canvas ref={ref} width={W} height={H} className="space-invaders-canvas" />
-      <div className="space-invaders-controls">ARROW KEYS / WASD to move — ENTER to restart</div>
-      <div className="back-link" onClick={onBack}>{'< cd /back'}</div>
+    <div className="pacman" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, animation: 'fadein 0.2s ease-in' }}>
+      <canvas ref={ref} width={W} height={H} className="space-invaders-canvas" style={{ maxWidth: '100%', height: 'auto', border: '1px solid var(--arcbyte-border)' }} onTouchStart={(e) => e.preventDefault()} onTouchMove={(e) => e.preventDefault()} />
+      <div className="doom-controls" style={{ fontSize: 10 }}>ARROW KEYS / WASD: move &middot; ENTER: restart &middot; BKSP: back</div>
+      <TouchControls
+        zone={{
+          dirs: [
+            { key: 'ArrowLeft', label: '\u25c0', className: 'touch-left' },
+            { key: 'ArrowUp', label: '\u25b2', className: 'touch-up' },
+            { key: 'ArrowDown', label: '\u25bc', className: 'touch-down' },
+            { key: 'ArrowRight', label: '\u25b6', className: 'touch-right' },
+          ],
+          actions: [
+            { key: 'Enter', label: 'RESTART', className: 'touch-secondary' },
+          ],
+        }}
+      />
+      <div className="back-link" onClick={onBack}>{'< cd /back  [BKSP]'}</div>
     </div>
   )
 }

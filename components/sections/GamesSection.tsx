@@ -42,7 +42,7 @@ export default function GamesSection({ onBack, onPlayGame }: GamesSectionProps) 
       </div>
 
       <div style={{ fontSize: 11, color: 'var(--arcbyte-green-dim)', marginBottom: 8 }}>
-        ←→↑↓: navigate &middot; SPACE: play &middot; ESC: back
+        ←→↑↓: navigate &middot; SPACE / TAP: play &middot; ESC: back
       </div>
 
       <div className="games-grid">
@@ -56,7 +56,7 @@ export default function GamesSection({ onBack, onPlayGame }: GamesSectionProps) 
             <div className="game-card-title">{'> '}{game.name}</div>
             <div className="game-card-desc">{game.description}</div>
             <div className="game-card-status">
-              {game.status === 'playable' ? '[ SPACE TO PLAY ]' : '[ COMING SOON ]'}
+              {game.status === 'playable' ? '[ TAP / SPACE TO PLAY ]' : '[ COMING SOON ]'}
             </div>
           </div>
         ))}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
+import TouchControls from './TouchControls'
 
 interface TetrisProps {
   onBack: () => void
@@ -603,22 +604,34 @@ export default function Tetris({ onBack }: TetrisProps) {
   }, [initGame, onBack, isValidPosition, rotatePiece, lockPiece, getGhostY, spawnPiece, nextFromBag])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div className="tetris" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, animation: 'fadein 0.2s ease-in' }}>
       <canvas
         ref={canvasRef}
         width={CANVAS_W}
         height={CANVAS_H}
-        style={{ display: 'block', imageRendering: 'pixelated' }}
+        style={{ display: 'block', imageRendering: 'pixelated', maxWidth: '100%', height: 'auto', border: '1px solid var(--arcbyte-border)' }}
+        onTouchStart={(e) => e.preventDefault()}
+        onTouchMove={(e) => e.preventDefault()}
       />
-      <div style={{ color: '#1a8f3d', fontFamily: 'monospace', fontSize: 12, marginTop: 6, textAlign: 'center' }}>
-        ARROW KEYS / WASD to move — UP to rotate — SPACE to drop — C to hold — ENTER restart — ESC back
+      <div className="doom-controls" style={{ fontSize: 10 }}>
+        ARROW KEYS / WASD: move &middot; UP: rotate &middot; SPACE: drop &middot; C: hold &middot; ENTER: restart &middot; ESC: back &middot; BKSP: back
       </div>
-      <div
-        style={{ color: '#1a8f3d', fontFamily: 'monospace', fontSize: 12, marginTop: 4, cursor: 'pointer' }}
-        onClick={onBack}
-      >
-        {'< cd /back'}
-      </div>
+      <TouchControls
+        zone={{
+          dirs: [
+            { key: 'ArrowLeft', label: '\u25c0', className: 'touch-left' },
+            { key: 'ArrowDown', label: '\u25bc', className: 'touch-down' },
+            { key: 'ArrowRight', label: '\u25b6', className: 'touch-right' },
+          ],
+          actions: [
+            { key: 'ArrowUp', label: 'ROTAR', className: 'touch-secondary' },
+            { key: ' ', label: 'DROP', className: 'touch-primary' },
+            { key: 'c', label: 'HOLD', className: 'touch-secondary' },
+            { key: 'Enter', label: 'RESTART', className: 'touch-secondary' },
+          ],
+        }}
+      />
+      <div className="back-link" onClick={onBack}>{'< cd /back  [BKSP]'}</div>
     </div>
   )
 }

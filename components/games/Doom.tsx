@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react'
 import Script from 'next/script'
+import TouchControls from './TouchControls'
 
 interface DoomProps {
   onBack: () => void
@@ -38,6 +39,12 @@ export default function Doom({ onBack }: DoomProps) {
   const dosRef = useRef<DosProps | null>(null)
   const startedRef = useRef(false)
   const [status, setStatus] = useState<Status>('loading')
+  const [isMobile] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(pointer: coarse)').matches
+  )
 
   const startDos = useCallback(() => {
     if (startedRef.current) return
@@ -59,6 +66,8 @@ export default function Doom({ onBack }: DoomProps) {
       renderBackend: 'canvas',
       renderAspect: '16/10',
       fsChanges: { local: false },
+      clickToStart: true,
+      mobileControls: true,
     })
     setStatus('ready')
   }, [])
@@ -142,9 +151,9 @@ export default function Doom({ onBack }: DoomProps) {
   }, [startDos])
 
   useEffect(() => {
-    if (status !== 'ready') return
+    if (status !== 'ready' || isMobile) return
     return startAscii()
-  }, [status, startAscii])
+  }, [status, startAscii, isMobile])
 
   useEffect(() => {
     return () => {
@@ -166,7 +175,7 @@ export default function Doom({ onBack }: DoomProps) {
   }, [onBack])
 
   return (
-    <div className="doom">
+    <div className={`doom ${isMobile ? 'doom--mobile' : ''}`}>
       <Script
         src="/jados/js-dos.js"
         strategy="afterInteractive"
@@ -188,6 +197,21 @@ export default function Doom({ onBack }: DoomProps) {
       <div className="doom-controls">
         ARROWS: move &middot; CTRL: fire &middot; SPACE: open/use &middot; SHIFT: run
       </div>
+      <TouchControls
+        zone={{
+          dirs: [
+            { key: 'ArrowUp', label: '\u25b2', className: 'touch-up' },
+            { key: 'ArrowLeft', label: '\u25c0', className: 'touch-left' },
+            { key: 'ArrowDown', label: '\u25bc', className: 'touch-down' },
+            { key: 'ArrowRight', label: '\u25b6', className: 'touch-right' },
+          ],
+          actions: [
+            { key: 'Control', label: 'FIRE', className: 'touch-primary' },
+            { key: ' ', label: 'USE', className: 'touch-secondary' },
+            { key: 'Shift', label: 'RUN', className: 'touch-secondary' },
+          ],
+        }}
+      />
       <div className="back-link" role="button" tabIndex={0} onClick={onBack} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onBack() } }}>{'< cd /back  [BKSP]'}</div>
     </div>
   )

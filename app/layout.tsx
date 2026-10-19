@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Share_Tech_Mono } from 'next/font/google'
 import './globals.css'
 
@@ -11,11 +11,11 @@ const shareTechMono = Share_Tech_Mono({
 
 export const metadata: Metadata = {
   title: 'ArcByte OS',
-  description: 'ArcByte OS — Portfolio of Willy. Systems, emulation, and cosmos.',
+  description: 'ArcByte OS — Portfolio de Willy. Sistemas, emulación y cosmos.',
   metadataBase: new URL('https://willythecreator.vercel.app'),
   openGraph: {
     title: 'ArcByte OS',
-    description: 'ArcByte OS — Portfolio of Willy. Systems, emulation, and cosmos.',
+    description: 'ArcByte OS — Portfolio de Willy. Sistemas, emulación y cosmos.',
     type: 'website',
     url: 'https://willythecreator.vercel.app',
     siteName: 'ArcByte OS',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'ArcByte OS',
-    description: 'ArcByte OS — Portfolio of Willy. Systems, emulation, and cosmos.',
+    description: 'ArcByte OS — Portfolio de Willy. Sistemas, emulación y cosmos.',
   },
   icons: {
     icon: '/favicon.ico',
@@ -31,6 +31,13 @@ export const metadata: Metadata = {
     apple: '/favicon.ico',
   },
   manifest: '/manifest.json',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#000a02',
 }
 
 export default function RootLayout({

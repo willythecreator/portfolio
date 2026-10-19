@@ -8,6 +8,16 @@ interface AboutSectionProps {
   onBack: () => void
 }
 
+function Prompt({ cmd, spin }: { cmd: string; spin: string }) {
+  return (
+    <div>
+      <span className="about-prompt">willy@arcbyte-os:~$ </span>
+      <span className="about-cmd">{cmd}</span>
+      <span style={{ color: 'var(--arcbyte-green)' }}>{spin}</span>
+    </div>
+  )
+}
+
 export default function AboutSection({ onBack }: AboutSectionProps) {
   const spinChar = useSpin(10)
 
@@ -23,14 +33,6 @@ export default function AboutSection({ onBack }: AboutSectionProps) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [handleKey])
 
-  const Prompt = ({ cmd }: { cmd: string }) => (
-    <div>
-      <span className="about-prompt">willy@arcbyte-os:~$ </span>
-      <span className="about-cmd">{cmd}</span>
-      <span style={{ color: 'var(--arcbyte-green)' }}>{spinChar}</span>
-    </div>
-  )
-
   return (
     <div className="section about">
       <div className="section-header">
@@ -39,7 +41,7 @@ export default function AboutSection({ onBack }: AboutSectionProps) {
       </div>
 
       <div className="about-block">
-        <Prompt cmd="cat about.txt" />
+        <Prompt cmd="cat about.txt" spin={spinChar} />
         <br />
         <div><span className="about-label">Name:</span> <span className="about-value">{ABOUT.name}</span></div>
         <div><span className="about-label">Handle:</span> <span className="about-value">@{ABOUT.handle}</span></div>
@@ -48,7 +50,7 @@ export default function AboutSection({ onBack }: AboutSectionProps) {
       </div>
 
       <div className="about-block">
-        <Prompt cmd="cat skills.txt" />
+        <Prompt cmd="cat skills.txt" spin={spinChar} />
         <br />
         <div><span className="about-label">Stack:</span> <span className="about-value">{ABOUT.stack.join(', ')}</span></div>
         <div><span className="about-label">Focus:</span></div>
@@ -59,7 +61,7 @@ export default function AboutSection({ onBack }: AboutSectionProps) {
       </div>
 
       <div className="about-block">
-        <Prompt cmd="cat bio.txt" />
+        <Prompt cmd="cat bio.txt" spin={spinChar} />
         <br />
         {ABOUT.bio.map((line, i) => (
           <div key={i}><span className="about-value">{line}</span></div>
@@ -67,7 +69,7 @@ export default function AboutSection({ onBack }: AboutSectionProps) {
       </div>
 
       <div className="about-block">
-        <Prompt cmd="cat stats.txt" />
+        <Prompt cmd="cat stats.txt" spin={spinChar} />
         <br />
         <div><span className="about-label">Repos:</span> <span className="about-value">{ABOUT.stats.repos}</span></div>
         <div><span className="about-label">Stars:</span> <span className="about-value">{ABOUT.stats.stars}</span></div>

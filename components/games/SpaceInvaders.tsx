@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
+import TouchControls from './TouchControls'
 
 interface SpaceInvadersProps {
   onBack: () => void
@@ -57,6 +58,10 @@ const ALIEN_SHAPES: string[][] = [
 
 export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const onBackRef = useRef(onBack)
+  useEffect(() => {
+    onBackRef.current = onBack
+  }, [onBack])
   const stateRef = useRef({
     player: { x: CANVAS_W / 2 - PLAYER_W / 2, y: CANVAS_H - 50 },
     aliens: [] as Alien[],
@@ -345,6 +350,10 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
       if (e.key === 'Enter' && (stateRef.current.gameOver || stateRef.current.won)) {
         initGame()
       }
+      if (e.key === 'Backspace') {
+        e.preventDefault()
+        onBackRef.current()
+      }
     }
     window.addEventListener('keydown', onKey)
 
@@ -357,17 +366,32 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
   }, [initGame])
 
   return (
-    <div className="space-invaders">
+    <div className="space-invaders" style={{ animation: 'fadein 0.2s ease-in' }}>
       <canvas
         ref={canvasRef}
         width={CANVAS_W}
         height={CANVAS_H}
         className="space-invaders-canvas"
+        style={{ maxWidth: '100%', height: 'auto', border: '1px solid var(--arcbyte-border)' }}
+        onTouchStart={(e) => e.preventDefault()}
+        onTouchMove={(e) => e.preventDefault()}
       />
       <div className="space-invaders-controls">
-        ARROW KEYS / A,D to move — SPACE to shoot — ENTER to restart
+        ARROW KEYS / A,D: move &middot; SPACE: shoot &middot; ENTER: restart &middot; BKSP: back
       </div>
-      <div className="back-link" onClick={onBack}>{'< cd /back'}</div>
+      <TouchControls
+        zone={{
+          dirs: [
+            { key: 'ArrowLeft', label: '\u25c0', className: 'touch-left' },
+            { key: 'ArrowRight', label: '\u25b6', className: 'touch-right' },
+          ],
+          actions: [
+            { key: ' ', label: 'FIRE', className: 'touch-primary' },
+            { key: 'Enter', label: 'RESTART', className: 'touch-secondary' },
+          ],
+        }}
+      />
+      <div className="back-link" onClick={onBack}>{'< cd /back  [BKSP]'}</div>
     </div>
   )
 }

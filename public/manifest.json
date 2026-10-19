@@ -1,15 +1,19 @@
 {
   "name": "ArcByte OS",
   "short_name": "ArcByte OS",
+  "description": "Portfolio interactivo de Willy, construido como un sistema operativo retro en el navegador.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "theme_color": "#000a02",
   "background_color": "#000a02",
   "icons": [
     {
       "src": "/favicon.png",
       "sizes": "32x32",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
