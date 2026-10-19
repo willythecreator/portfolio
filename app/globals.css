@@ -939,7 +939,7 @@ body {
 .doom-player {
   position: absolute;
   inset: 0;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .doom-ascii {
@@ -951,8 +951,8 @@ body {
   color: #fff;
   background: #000;
   font-family: var(--arcbyte-font);
-  font-size: calc(100cqw / 320 / 0.54);
-  line-height: calc(100cqw * 0.625 / 108);
+  font-size: calc(100cqw / var(--doom-cols, 320) / 0.54);
+  line-height: calc(100cqw * 0.625 / var(--doom-rows, 108));
   letter-spacing: 0;
   font-variant-ligatures: none;
   font-kerning: none;
@@ -971,20 +971,6 @@ body {
   height: 100%;
   pointer-events: none;
   mix-blend-mode: multiply;
-}
-
-/* On touch devices skip the heavy ASCII conversion and show the raw canvas. */
-.doom--mobile .doom-ascii,
-.doom--mobile .doom-field {
-  display: none;
-}
-
-.doom--mobile .doom-player {
-  pointer-events: auto;
-}
-
-.doom--mobile .doom-screen {
-  cursor: auto;
 }
 
 .doom-status {
@@ -1006,7 +992,7 @@ body {
   line-height: 1.6;
 }
 
-/* ── Touch controls (mobile) ──────────────────────────────────────────────── */
+/* ── Retro controller (mobile) ─────────────────────────────────────────────── */
 .touch-controls {
   display: none;
 }
@@ -1014,93 +1000,238 @@ body {
 @media (hover: none) and (pointer: coarse) {
   .touch-controls {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
-    gap: 12px;
+    gap: 16px;
     width: 100%;
-    max-width: 640px;
-    margin: 4px auto 0;
-    padding: 4px 8px 10px;
+    max-width: 620px;
+    margin: 6px auto 0;
+    padding: 6px 10px 12px;
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
   }
 }
 
-.touch-pad {
-  display: grid;
-  grid-template-columns: repeat(3, 54px);
-  grid-template-rows: repeat(3, 54px);
-  grid-template-areas:
-    ". up ."
-    "left . right"
-    ". down .";
-  gap: 6px;
+/* D-pad cross */
+.nes-dpad {
+  position: relative;
+  width: 162px;
+  height: 162px;
+  flex: 0 0 auto;
 }
 
-.touch-up { grid-area: up; }
-.touch-down { grid-area: down; }
-.touch-left { grid-area: left; }
-.touch-right { grid-area: right; }
-
-.touch-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-content: center;
-  gap: 8px;
-  max-width: 190px;
+.nes-dpad::before,
+.nes-dpad::after {
+  content: '';
+  position: absolute;
+  background: linear-gradient(160deg, #2a3034, #0b0e10 55%, #171b1e);
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.1),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.7),
+    0 6px 12px rgba(0, 0, 0, 0.55);
 }
 
-.touch-btn {
+.nes-dpad::before {
+  left: 54px;
+  top: 0;
+  width: 54px;
+  height: 162px;
+  border-radius: 9px 9px 7px 7px;
+}
+
+.nes-dpad::after {
+  top: 54px;
+  left: 0;
+  width: 162px;
+  height: 54px;
+  border-radius: 7px 7px 9px 9px;
+}
+
+.dpad-slot {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  z-index: 2;
+}
+
+.dpad-up { left: 54px; top: 0; }
+.dpad-down { left: 54px; top: 108px; }
+.dpad-left { left: 0; top: 54px; }
+.dpad-right { left: 108px; top: 54px; }
+
+.dpad-center {
+  position: absolute;
+  left: 54px;
+  top: 54px;
+  width: 54px;
+  height: 54px;
+  z-index: 2;
+  background: radial-gradient(circle at 50% 35%, #242a2e, #090c0e 72%);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+.dpad-btn {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 54px;
-  min-height: 54px;
-  padding: 6px 10px;
-  border: 1px solid var(--arcbyte-green-dim);
-  border-radius: 6px;
-  background: rgba(51, 255, 102, 0.06);
+  color: #4a555c;
+  font-size: 17px;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.06s, color 0.06s;
+}
+
+.dpad-arrow {
+  pointer-events: none;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.8);
+}
+
+.dpad-btn:active {
+  transform: scale(0.86);
   color: var(--arcbyte-green);
+}
+
+.dpad-btn:active .dpad-arrow {
+  text-shadow: 0 0 9px var(--arcbyte-green);
+}
+
+/* Action buttons: A / B / C / START */
+.nes-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+  max-width: 220px;
+}
+
+.nes-btn {
+  width: 66px;
+  height: 66px;
+  border: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--arcbyte-font);
-  font-size: 13px;
-  line-height: 1;
-  text-shadow: 0 0 6px var(--arcbyte-green);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #fff;
   cursor: pointer;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
-  transition: background 0.08s, transform 0.08s;
+  transition: transform 0.06s, box-shadow 0.06s, filter 0.06s;
 }
 
-.touch-btn:active {
-  background: rgba(51, 255, 102, 0.28);
-  transform: scale(0.95);
+.nes-a,
+.nes-b {
+  background: radial-gradient(circle at 36% 28%, #ff8a80, #d32f2f 58%, #7f0000);
+  box-shadow:
+    inset 0 3px 3px rgba(255, 255, 255, 0.55),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.55),
+    0 6px 0 #5c0000,
+    0 9px 14px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
-.touch-primary {
-  border-color: var(--arcbyte-green);
-  background: rgba(51, 255, 102, 0.14);
-  font-weight: 700;
+.nes-c {
+  background: radial-gradient(circle at 36% 28%, #9dff9f, #21a03a 58%, #004d12);
+  box-shadow:
+    inset 0 3px 3px rgba(255, 255, 255, 0.5),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.5),
+    0 6px 0 #00330c,
+    0 9px 14px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
-.touch-secondary {
-  border-color: var(--arcbyte-border);
-  color: var(--arcbyte-teal);
-  font-size: 11px;
-  text-shadow: 0 0 6px var(--arcbyte-teal);
+.nes-start {
+  width: 88px;
+  height: 38px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--arcbyte-green);
+  background: linear-gradient(180deg, #3a4046, #14181b);
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.18),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.7),
+    0 5px 0 #05080a,
+    0 8px 12px rgba(0, 0, 0, 0.55);
+  text-shadow: 0 0 6px var(--arcbyte-green);
 }
 
-@media (hover: none) and (pointer: coarse) {
-  .touch-pad {
-    grid-template-columns: repeat(3, 58px);
-    grid-template-rows: repeat(3, 58px);
+.nes-btn:active {
+  transform: translateY(4px);
+  filter: brightness(1.12);
+}
+
+.nes-a:active,
+.nes-b:active {
+  box-shadow:
+    inset 0 3px 3px rgba(255, 255, 255, 0.4),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.6),
+    0 2px 0 #5c0000;
+}
+
+.nes-c:active {
+  box-shadow:
+    inset 0 3px 3px rgba(255, 255, 255, 0.4),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.6),
+    0 2px 0 #00330c;
+}
+
+.nes-start:active {
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.15),
+    0 1px 0 #05080a;
+}
+
+/* Landscape: float the controller over the screen corners so the whole
+   page + game stay visible when the phone is rotated. */
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+  .touch-controls {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: block;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
   }
-  .touch-btn {
-    min-width: 58px;
-    min-height: 58px;
+
+  .nes-dpad {
+    position: fixed;
+    left: 12px;
+    bottom: 10px;
+    transform: scale(0.86);
+    transform-origin: left bottom;
+    pointer-events: auto;
+    opacity: 0.92;
+  }
+
+  .nes-actions {
+    position: fixed;
+    right: 12px;
+    bottom: 20px;
+    max-width: none;
+    transform: scale(0.86);
+    transform-origin: right bottom;
+    pointer-events: auto;
+    opacity: 0.92;
+  }
+
+  .doom-controls,
+  .space-invaders-controls {
+    display: none;
   }
 }
 
@@ -1252,5 +1383,111 @@ body {
   .crt-flicker,
   .pulse-glow {
     animation: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* LANDSCAPE PHONES — fit the whole page + game on a rotated screen         */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .content {
+    padding: 6px 12px;
+  }
+
+  .boot {
+    min-height: auto;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .menu {
+    gap: 6px;
+  }
+
+  .menu-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .menu-banner {
+    font-size: 6px;
+    line-height: 1.05;
+    margin-bottom: 2px;
+  }
+
+  .menu-header {
+    font-size: 9px;
+  }
+
+  .menu-item {
+    padding: 6px 8px;
+  }
+
+  .menu-item-icon {
+    display: none;
+  }
+
+  .menu-item-title {
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+
+  .menu-item-desc {
+    font-size: 9px;
+    line-height: 1.3;
+  }
+
+  .neofetch {
+    gap: 16px;
+  }
+
+  .neofetch-ascii {
+    font-size: 7px;
+  }
+
+  .about,
+  .section,
+  .project-detail,
+  .project-detail-single,
+  .terminal {
+    font-size: 11px;
+  }
+
+  /* Games: keep the canvas fully visible, leave room for the floating pad. */
+  .space-invaders,
+  .tetris,
+  .pacman,
+  .doom {
+    gap: 4px;
+    padding: 0;
+  }
+
+  .space-invaders-canvas,
+  .tetris > canvas,
+  .pacman > canvas {
+    max-height: calc(100vh - 16px) !important;
+    max-width: calc(100vw - 340px) !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .doom-screen {
+    max-width: min(calc(100vw - 340px), calc((100vh - 30px) * 1.6));
+  }
+
+  .doom-controls,
+  .space-invaders-controls {
+    display: none;
+  }
+
+  .back-link {
+    position: fixed;
+    top: 4px;
+    right: 10px;
+    z-index: 45;
+    margin: 0;
+    font-size: 10px;
+    opacity: 0.75;
   }
 }

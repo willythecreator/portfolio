@@ -1,20 +1,22 @@
 'use client'
 
-import { useCallback, useRef } from 'react'
+import {
+  useCallback,
+  useRef,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react'
 
-export type TouchKey = {
-  key: string
-  label: string
-  className?: string
-}
+export type DpadKey = { dir: 'up' | 'down' | 'left' | 'right'; key: string }
+export type ActionKey = { key: string; label: string; variant?: 'a' | 'b' | 'c' | 'start' }
 
-type Zone = {
-  dirs?: TouchKey[]
-  actions?: TouchKey[]
+export interface ControllerZone {
+  dpad?: DpadKey[]
+  actions?: ActionKey[]
 }
 
 interface TouchControlsProps {
-  zone: Zone
+  zone: ControllerZone
 }
 
 const KEY_CODE: Record<string, number> = {
@@ -61,12 +63,16 @@ function dispatch(type: 'keydown' | 'keyup', key: string) {
 
 const MIN_HOLD_MS = 90
 
-function TouchButton({
-  k,
+function HoldButton({
+  keyName,
+  className,
+  children,
   onPress,
   onRelease,
 }: {
-  k: TouchKey
+  keyName: string
+  className: string
+  children: ReactNode
   onPress: (key: string) => void
   onRelease: (key: string) => void
 }) {
@@ -75,27 +81,27 @@ function TouchButton({
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const down = useCallback(
-    (e: React.PointerEvent) => {
+    (e: ReactPointerEvent) => {
       e.preventDefault()
       e.stopPropagation()
       if (active.current) return
       active.current = true
       pressedAt.current = Date.now()
       ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
-      onPress(k.key)
+      onPress(keyName)
     },
-    [k.key, onPress]
+    [keyName, onPress]
   )
 
   const up = useCallback(
-    (e: React.PointerEvent) => {
+    (e: ReactPointerEvent) => {
       e.preventDefault()
       e.stopPropagation()
       if (!active.current) return
       active.current = false
       const elapsed = Date.now() - pressedAt.current
       const release = () => {
-        onRelease(k.key)
+        onRelease(keyName)
         timer.current = null
       }
       if (elapsed < MIN_HOLD_MS) {
@@ -104,23 +110,30 @@ function TouchButton({
         release()
       }
     },
-    [k.key, onRelease]
+    [keyName, onRelease]
   )
 
   return (
     <button
       type="button"
-      className={`touch-btn ${k.className ?? ''}`}
+      className={className}
       onPointerDown={down}
       onPointerUp={up}
       onPointerCancel={up}
       onPointerLeave={up}
       onContextMenu={(e) => e.preventDefault()}
-      aria-label={k.label}
+      aria-label={keyName}
     >
-      {k.label}
+      {children}
     </button>
   )
+}
+
+const ARROWS: Record<DpadKey['dir'], string> = {
+  up: '\u25b2',
+  down: '\u25bc',
+  left: '\u25c0',
+  right: '\u25b6',
 }
 
 export default function TouchControls({ zone }: TouchControlsProps) {
@@ -129,14 +142,40 @@ export default function TouchControls({ zone }: TouchControlsProps) {
 
   return (
     <div className="touch-controls" aria-hidden="true">
-      <div className="touch-pad">
-        {zone.dirs?.map((k) => (
-          <TouchButton key={k.key} k={k} onPress={onPress} onRelease={onRelease} />
-        ))}
+      <div className="nes-dpad">
+        {(['up', 'left', 'right', 'down'] as const).map((dir) => {
+          const entry = zone.dpad?.find((d) => d.dir === dir)
+          return (
+            <div key={dir} className={`dpad-slot dpad-${dir}`}>
+              {entry ? (
+                <HoldButton
+                  keyName={entry.key}
+                  className="dpad-btn"
+                  onPress={onPress}
+                  onRelease={onRelease}
+                >
+                  <span className="dpad-arrow">{ARROWS[dir]}</span>
+                </HoldButton>
+              ) : null}
+            </div>
+          )
+        })}
+        <div className="dpad-center" />
       </div>
-      <div className="touch-actions">
-        {zone.actions?.map((k) => (
-          <TouchButton key={k.key} k={k} onPress={onPress} onRelease={onRelease} />
+
+      <div className="nes-actions">
+        {zone.actions?.map((a) => (
+          <HoldButton
+            key={`${a.variant ?? 'a'}-${a.key}`}
+            keyName={a.key}
+            className={`nes-btn nes-${a.variant ?? 'a'} ${
+              a.variant === 'start' ? 'nes-start' : ''
+            }`}
+            onPress={onPress}
+            onRelease={onRelease}
+          >
+            {a.label}
+          </HoldButton>
         ))}
       </div>
     </div>

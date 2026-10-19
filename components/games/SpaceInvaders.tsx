@@ -381,13 +381,13 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
       </div>
       <TouchControls
         zone={{
-          dirs: [
-            { key: 'ArrowLeft', label: '\u25c0', className: 'touch-left' },
-            { key: 'ArrowRight', label: '\u25b6', className: 'touch-right' },
+          dpad: [
+            { dir: 'left', key: 'ArrowLeft' },
+            { dir: 'right', key: 'ArrowRight' },
           ],
           actions: [
-            { key: ' ', label: 'FIRE', className: 'touch-primary' },
-            { key: 'Enter', label: 'RESTART', className: 'touch-secondary' },
+            { key: ' ', label: 'A', variant: 'a' },
+            { key: 'Enter', label: 'START', variant: 'start' },
           ],
         }}
       />

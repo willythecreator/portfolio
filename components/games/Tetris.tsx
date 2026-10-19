@@ -618,16 +618,16 @@ export default function Tetris({ onBack }: TetrisProps) {
       </div>
       <TouchControls
         zone={{
-          dirs: [
-            { key: 'ArrowLeft', label: '\u25c0', className: 'touch-left' },
-            { key: 'ArrowDown', label: '\u25bc', className: 'touch-down' },
-            { key: 'ArrowRight', label: '\u25b6', className: 'touch-right' },
+          dpad: [
+            { dir: 'left', key: 'ArrowLeft' },
+            { dir: 'right', key: 'ArrowRight' },
+            { dir: 'down', key: 'ArrowDown' },
           ],
           actions: [
-            { key: 'ArrowUp', label: 'ROTAR', className: 'touch-secondary' },
-            { key: ' ', label: 'DROP', className: 'touch-primary' },
-            { key: 'c', label: 'HOLD', className: 'touch-secondary' },
-            { key: 'Enter', label: 'RESTART', className: 'touch-secondary' },
+            { key: 'ArrowUp', label: 'A', variant: 'a' },
+            { key: ' ', label: 'B', variant: 'b' },
+            { key: 'c', label: 'C', variant: 'c' },
+            { key: 'Enter', label: 'START', variant: 'start' },
           ],
         }}
       />

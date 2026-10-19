@@ -422,14 +422,14 @@ export default function PacMan({ onBack }: PacManProps) {
       <div className="doom-controls" style={{ fontSize: 10 }}>ARROW KEYS / WASD: move &middot; ENTER: restart &middot; BKSP: back</div>
       <TouchControls
         zone={{
-          dirs: [
-            { key: 'ArrowLeft', label: '\u25c0', className: 'touch-left' },
-            { key: 'ArrowUp', label: '\u25b2', className: 'touch-up' },
-            { key: 'ArrowDown', label: '\u25bc', className: 'touch-down' },
-            { key: 'ArrowRight', label: '\u25b6', className: 'touch-right' },
+          dpad: [
+            { dir: 'up', key: 'ArrowUp' },
+            { dir: 'left', key: 'ArrowLeft' },
+            { dir: 'right', key: 'ArrowRight' },
+            { dir: 'down', key: 'ArrowDown' },
           ],
           actions: [
-            { key: 'Enter', label: 'RESTART', className: 'touch-secondary' },
+            { key: 'Enter', label: 'START', variant: 'start' },
           ],
         }}
       />

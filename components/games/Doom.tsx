@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback, useState } from 'react'
+import { useEffect, useRef, useCallback, useState, type CSSProperties } from 'react'
 import Script from 'next/script'
 import TouchControls from './TouchControls'
 
@@ -22,10 +22,10 @@ declare global {
 
 type Status = 'loading' | 'ready' | 'error'
 
-const COLS = 320
-const ROWS = 108
-const RAMP = ' .,:;-=+*oxXO#%&@'
-const GAMMA = 0.85
+const COLS = 480
+const ROWS = 162
+const RAMP = " .,:;~-+=*oxX#%&@$8BWM"
+const GAMMA = 0.8
 
 const LUT = new Uint8Array(256)
 for (let i = 0; i < 256; i++) {
@@ -39,12 +39,6 @@ export default function Doom({ onBack }: DoomProps) {
   const dosRef = useRef<DosProps | null>(null)
   const startedRef = useRef(false)
   const [status, setStatus] = useState<Status>('loading')
-  const [isMobile] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(pointer: coarse)').matches
-  )
 
   const startDos = useCallback(() => {
     if (startedRef.current) return
@@ -117,9 +111,9 @@ export default function Doom({ onBack }: DoomProps) {
             const lev = LUT[lum | 0]
             chars[x] = RAMP[lev]
             const f = lev / (RAMP.length - 1)
-            fd[i] = 10 + 41 * f
-            fd[i + 1] = 60 + 195 * f
-            fd[i + 2] = 25 + 77 * f
+            fd[i] = 2 + 64 * f * f
+            fd[i + 1] = 18 + 237 * f
+            fd[i + 2] = 6 + 30 * f
             fd[i + 3] = 255
           }
           rows[y] = chars.join('')
@@ -151,9 +145,9 @@ export default function Doom({ onBack }: DoomProps) {
   }, [startDos])
 
   useEffect(() => {
-    if (status !== 'ready' || isMobile) return
+    if (status !== 'ready') return
     return startAscii()
-  }, [status, startAscii, isMobile])
+  }, [status, startAscii])
 
   useEffect(() => {
     return () => {
@@ -175,14 +169,22 @@ export default function Doom({ onBack }: DoomProps) {
   }, [onBack])
 
   return (
-    <div className={`doom ${isMobile ? 'doom--mobile' : ''}`}>
+    <div className="doom">
       <Script
         src="/jados/js-dos.js"
         strategy="afterInteractive"
         onLoad={startDos}
         onError={() => setStatus('error')}
       />
-      <div className="doom-screen">
+      <div
+        className="doom-screen"
+        style={
+          {
+            '--doom-cols': COLS,
+            '--doom-rows': ROWS,
+          } as CSSProperties
+        }
+      >
         <div ref={containerRef} className="doom-player" />
         <pre ref={asciiRef} className="doom-ascii" aria-hidden="true" />
         <canvas ref={fieldRef} className="doom-field" aria-hidden="true" />
@@ -199,16 +201,16 @@ export default function Doom({ onBack }: DoomProps) {
       </div>
       <TouchControls
         zone={{
-          dirs: [
-            { key: 'ArrowUp', label: '\u25b2', className: 'touch-up' },
-            { key: 'ArrowLeft', label: '\u25c0', className: 'touch-left' },
-            { key: 'ArrowDown', label: '\u25bc', className: 'touch-down' },
-            { key: 'ArrowRight', label: '\u25b6', className: 'touch-right' },
+          dpad: [
+            { dir: 'up', key: 'ArrowUp' },
+            { dir: 'left', key: 'ArrowLeft' },
+            { dir: 'right', key: 'ArrowRight' },
+            { dir: 'down', key: 'ArrowDown' },
           ],
           actions: [
-            { key: 'Control', label: 'FIRE', className: 'touch-primary' },
-            { key: ' ', label: 'USE', className: 'touch-secondary' },
-            { key: 'Shift', label: 'RUN', className: 'touch-secondary' },
+            { key: 'Control', label: 'A', variant: 'a' },
+            { key: ' ', label: 'B', variant: 'b' },
+            { key: 'Shift', label: 'C', variant: 'c' },
           ],
         }}
       />
