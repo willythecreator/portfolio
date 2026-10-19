@@ -1512,48 +1512,6 @@ body {
     display: none;
   }
 
-  .space-invaders .touch-controls,
-  .tetris .touch-controls,
-  .pacman .touch-controls,
-  .doom .touch-controls {
-    position: absolute;
-    inset: 0;
-    display: block;
-    width: auto;
-    max-width: none;
-    margin: 0;
-    padding: 0;
-    pointer-events: none;
-    z-index: 20;
-  }
-
-  .space-invaders .pixel-dpad,
-  .tetris .pixel-dpad,
-  .pacman .pixel-dpad,
-  .doom .pixel-dpad {
-    position: absolute;
-    left: max(10px, env(safe-area-inset-left));
-    bottom: max(8px, env(safe-area-inset-bottom));
-    transform: scale(0.8);
-    transform-origin: left bottom;
-    pointer-events: auto;
-    opacity: 0.95;
-  }
-
-  .space-invaders .pixel-actions,
-  .tetris .pixel-actions,
-  .pacman .pixel-actions,
-  .doom .pixel-actions {
-    position: absolute;
-    right: max(10px, env(safe-area-inset-right));
-    bottom: max(10px, env(safe-area-inset-bottom));
-    max-width: none;
-    transform: scale(0.8);
-    transform-origin: right bottom;
-    pointer-events: auto;
-    opacity: 0.95;
-  }
-
   .space-invaders > .back-link,
   .tetris > .back-link,
   .pacman > .back-link,
