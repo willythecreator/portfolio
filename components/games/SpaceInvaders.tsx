@@ -74,6 +74,7 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
     lives: 3,
     gameOver: false,
     won: false,
+    paused: false,
     lastShot: 0,
     keys: {} as Record<string, boolean>,
     frame: 0,
@@ -114,6 +115,7 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
     s.lives = 3
     s.gameOver = false
     s.won = false
+    s.paused = false
     s.alienDir = 1
     s.alienSpeed = 0.5
     s.alienDropTimer = 0
@@ -140,7 +142,7 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
 
     const update = () => {
       const s = stateRef.current
-      if (s.gameOver || s.won) return
+      if (s.gameOver || s.won || s.paused) return
 
       s.frame++
 
@@ -314,6 +316,20 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
       ctx.fillText(`SCORE: ${s.score}`, 10, 24)
       ctx.fillText(`LIVES: ${'█'.repeat(s.lives)}`, CANVAS_W - 140, 24)
 
+      // Pause overlay
+      if (s.paused && !s.gameOver && !s.won) {
+        ctx.fillStyle = 'rgba(0, 10, 2, 0.7)'
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
+        ctx.fillStyle = '#33ff66'
+        ctx.font = '28px "Share Tech Mono", monospace'
+        const msg = 'PAUSED'
+        ctx.fillText(msg, CANVAS_W / 2 - ctx.measureText(msg).width / 2, CANVAS_H / 2)
+        ctx.font = '14px "Share Tech Mono", monospace'
+        ctx.fillStyle = '#1a8f3d'
+        const sub = 'PRESS START TO RESUME'
+        ctx.fillText(sub, CANVAS_W / 2 - ctx.measureText(sub).width / 2, CANVAS_H / 2 + 30)
+      }
+
       // Game over / win
       if (s.gameOver || s.won) {
         ctx.fillStyle = 'rgba(0, 10, 2, 0.85)'
@@ -324,11 +340,8 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
         ctx.fillText(msg, CANVAS_W / 2 - ctx.measureText(msg).width / 2, CANVAS_H / 2 - 20)
         ctx.font = '14px "Share Tech Mono", monospace'
         ctx.fillStyle = '#1a8f3d'
-        ctx.fillText(
-          'PRESS ENTER TO RESTART',
-          CANVAS_W / 2 - 100,
-          CANVAS_H / 2 + 20
-        )
+        const sub = 'PRESS START TO RESTART'
+        ctx.fillText(sub, CANVAS_W / 2 - ctx.measureText(sub).width / 2, CANVAS_H / 2 + 20)
       }
     }
 
@@ -347,8 +360,10 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
     animId = requestAnimationFrame(loop)
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && (stateRef.current.gameOver || stateRef.current.won)) {
-        initGame()
+      if (e.key === 'Enter') {
+        const s = stateRef.current
+        if (s.gameOver || s.won) initGame()
+        else s.paused = !s.paused
       }
       if (e.key === 'Backspace') {
         e.preventDefault()
@@ -377,7 +392,7 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
         onTouchMove={(e) => e.preventDefault()}
       />
       <div className="space-invaders-controls">
-        ARROW KEYS / A,D: move &middot; SPACE: shoot &middot; ENTER: restart &middot; BKSP: back
+        D-PAD / ARROWS: move &middot; A / SPACE: shoot &middot; START / ENTER: pause &middot; BKSP: back
       </div>
       <TouchControls
         zone={{

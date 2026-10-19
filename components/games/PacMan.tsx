@@ -93,6 +93,7 @@ interface G {
   mTimer: number; scatter: boolean
   frame: number
   over: boolean; won: boolean
+  paused: boolean
   keys: Record<string, boolean>
 }
 
@@ -136,7 +137,7 @@ export default function PacMan({ onBack }: PacManProps) {
       grid: MAP.map(r => [...r]),
       dots: 0, score: 0, lives: 3,
       ghosts: [], fright: 0, mTimer: 0, scatter: true,
-      frame: 0, over: false, won: false, keys: {},
+      frame: 0, over: false, won: false, paused: false, keys: {},
     }
     for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) if (MAP[r][c] === 0 || MAP[r][c] === 2) s.dots++
     s.ghosts = [
@@ -175,7 +176,7 @@ export default function PacMan({ onBack }: PacManProps) {
     const atCenter = (e: Ent) => e.ox === 0 && e.oy === 0
 
     const update = () => {
-      if (s.over || s.won) return
+      if (s.over || s.won || s.paused) return
       s.frame++
 
       const k = s.keys
@@ -382,13 +383,24 @@ export default function PacMan({ onBack }: PacManProps) {
       ctx.fillText(`SCORE: ${s.score}`, 10, 24)
       for (let i = 0; i < s.lives; i++) { ctx.beginPath(); ctx.arc(W - 30 - i * 25, 20, 8, 0.25, Math.PI * 2 - 0.25); ctx.lineTo(W - 30 - i * 25, 20); ctx.fill() }
 
+      if (s.paused && !s.over && !s.won) {
+        ctx.fillStyle = 'rgba(0,10,2,0.7)'; ctx.fillRect(0, 0, W, H)
+        ctx.fillStyle = '#33ff66'; ctx.font = '28px "Share Tech Mono", monospace'
+        const p = 'PAUSED'
+        ctx.fillText(p, W / 2 - ctx.measureText(p).width / 2, H / 2)
+        ctx.font = '14px "Share Tech Mono", monospace'; ctx.fillStyle = '#1a8f3d'
+        const ps = 'PRESS START TO RESUME'
+        ctx.fillText(ps, W / 2 - ctx.measureText(ps).width / 2, H / 2 + 30)
+      }
+
       if (s.over || s.won) {
         ctx.fillStyle = 'rgba(0,10,2,0.85)'; ctx.fillRect(0, 0, W, H)
         ctx.fillStyle = s.won ? '#33ff66' : '#ff3333'; ctx.font = '28px "Share Tech Mono", monospace'
         const m = s.won ? 'YOU WIN!' : 'GAME OVER'
         ctx.fillText(m, W / 2 - ctx.measureText(m).width / 2, H / 2 - 20)
         ctx.font = '14px "Share Tech Mono", monospace'; ctx.fillStyle = '#1a8f3d'
-        ctx.fillText('ENTER TO RESTART', W / 2 - 80, H / 2 + 20)
+        const rs = 'PRESS START TO RESTART'
+        ctx.fillText(rs, W / 2 - ctx.measureText(rs).width / 2, H / 2 + 20)
       }
     }
 
@@ -403,7 +415,10 @@ export default function PacMan({ onBack }: PacManProps) {
       gRef.current = s
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && (s.over || s.won)) restart()
+      if (e.key === 'Enter') {
+        if (s.over || s.won) restart()
+        else s.paused = !s.paused
+      }
     }
     window.addEventListener('keydown', onKey)
 
@@ -419,7 +434,7 @@ export default function PacMan({ onBack }: PacManProps) {
   return (
     <div className="pacman" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, animation: 'fadein 0.2s ease-in' }}>
       <canvas ref={ref} width={W} height={H} className="space-invaders-canvas" style={{ maxWidth: '100%', height: 'auto', border: '1px solid var(--arcbyte-border)' }} onTouchStart={(e) => e.preventDefault()} onTouchMove={(e) => e.preventDefault()} />
-      <div className="doom-controls" style={{ fontSize: 10 }}>ARROW KEYS / WASD: move &middot; ENTER: restart &middot; BKSP: back</div>
+      <div className="doom-controls" style={{ fontSize: 10 }}>D-PAD / ARROWS: move &middot; START / ENTER: pause &middot; BKSP: back</div>
       <TouchControls
         zone={{
           dpad: [

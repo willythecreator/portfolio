@@ -2,12 +2,15 @@
 
 import {
   useCallback,
+  useMemo,
   useRef,
+  useState,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react'
 
-export type DpadKey = { dir: 'up' | 'down' | 'left' | 'right'; key: string }
+export type Dir = 'up' | 'down' | 'left' | 'right'
+export type DpadKey = { dir: Dir; key: string }
 export type ActionKey = { key: string; label: string; variant?: 'a' | 'b' | 'c' | 'start' }
 
 export interface ControllerZone {
@@ -61,9 +64,17 @@ function dispatch(type: 'keydown' | 'keyup', key: string) {
   window.dispatchEvent(event)
 }
 
-const MIN_HOLD_MS = 90
+const MIN_HOLD_MS = 80
 
-function HoldButton({
+const ARROWS: Record<Dir, string> = {
+  up: '\u25b2',
+  down: '\u25bc',
+  left: '\u25c0',
+  right: '\u25b6',
+}
+
+/* A single tap/hold action button (A / B / C / START). */
+function ActionButton({
   keyName,
   className,
   children,
@@ -80,11 +91,19 @@ function HoldButton({
   const pressedAt = useRef(0)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const clearTimer = () => {
+    if (timer.current) {
+      clearTimeout(timer.current)
+      timer.current = null
+    }
+  }
+
   const down = useCallback(
     (e: ReactPointerEvent) => {
       e.preventDefault()
       e.stopPropagation()
       if (active.current) return
+      clearTimer()
       active.current = true
       pressedAt.current = Date.now()
       ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
@@ -129,53 +148,175 @@ function HoldButton({
   )
 }
 
-const ARROWS: Record<DpadKey['dir'], string> = {
-  up: '\u25b2',
-  down: '\u25bc',
-  left: '\u25c0',
-  right: '\u25b6',
+/* Sliding d-pad: tracks the finger and switches direction without lifting. */
+function PixelDpad({ dirs }: { dirs: DpadKey[] }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [active, setActive] = useState<Dir | null>(null)
+  const activeRef = useRef<Dir | null>(null)
+  const pointerId = useRef<number | null>(null)
+  const pressedAt = useRef(0)
+  const releaseTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+
+  const map = useMemo(() => {
+    const m: Partial<Record<Dir, string>> = {}
+    for (const d of dirs) m[d.dir] = d.key
+    return m
+  }, [dirs])
+
+  const clearTimer = (key: string) => {
+    const t = releaseTimers.current[key]
+    if (t) {
+      clearTimeout(t)
+      delete releaseTimers.current[key]
+    }
+  }
+
+  const press = useCallback(
+    (dir: Dir) => {
+      const key = map[dir]
+      if (!key) return
+      clearTimer(key)
+      activeRef.current = dir
+      setActive(dir)
+      pressedAt.current = Date.now()
+      dispatch('keydown', key)
+    },
+    [map]
+  )
+
+  const release = useCallback(
+    (immediate: boolean) => {
+      const dir = activeRef.current
+      if (!dir) return
+      const key = map[dir]
+      activeRef.current = null
+      setActive(null)
+      if (!key) return
+      if (immediate) {
+        clearTimer(key)
+        dispatch('keyup', key)
+        return
+      }
+      const elapsed = Date.now() - pressedAt.current
+      if (elapsed < MIN_HOLD_MS) {
+        clearTimer(key)
+        releaseTimers.current[key] = setTimeout(() => {
+          dispatch('keyup', key)
+          delete releaseTimers.current[key]
+        }, MIN_HOLD_MS - elapsed)
+      } else {
+        dispatch('keyup', key)
+      }
+    },
+    [map]
+  )
+
+  const pick = useCallback(
+    (clientX: number, clientY: number): Dir | null => {
+      const el = ref.current
+      if (!el) return null
+      const r = el.getBoundingClientRect()
+      const dx = clientX - (r.left + r.width / 2)
+      const dy = clientY - (r.top + r.height / 2)
+      const dead = r.width * 0.12
+      const options: Array<[Dir, number]> = []
+      if (map.left && dx < -dead) options.push(['left', -dx])
+      if (map.right && dx > dead) options.push(['right', dx])
+      if (map.up && dy < -dead) options.push(['up', -dy])
+      if (map.down && dy > dead) options.push(['down', dy])
+      if (options.length === 0) return null
+      options.sort((a, b) => b[1] - a[1])
+      return options[0][0]
+    },
+    [map]
+  )
+
+  const onDown = (e: ReactPointerEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (pointerId.current !== null) return
+    pointerId.current = e.pointerId
+    ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
+    const dir = pick(e.clientX, e.clientY)
+    if (dir) press(dir)
+  }
+
+  const onMove = (e: ReactPointerEvent) => {
+    if (pointerId.current !== e.pointerId) return
+    e.preventDefault()
+    const dir = pick(e.clientX, e.clientY)
+    if (dir === activeRef.current) return
+    if (activeRef.current) {
+      const oldKey = map[activeRef.current]
+      if (oldKey) {
+        const t = releaseTimers.current[oldKey]
+        if (t) {
+          clearTimeout(t)
+          delete releaseTimers.current[oldKey]
+        }
+        dispatch('keyup', oldKey)
+      }
+    }
+    if (dir) {
+      press(dir)
+    } else {
+      activeRef.current = null
+      setActive(null)
+    }
+  }
+
+  const onUp = (e: ReactPointerEvent) => {
+    if (pointerId.current !== e.pointerId) return
+    e.preventDefault()
+    e.stopPropagation()
+    pointerId.current = null
+    release(false)
+  }
+
+  return (
+    <div
+      ref={ref}
+      className="pixel-dpad"
+      onPointerDown={onDown}
+      onPointerMove={onMove}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+      onContextMenu={(e) => e.preventDefault()}
+      aria-hidden="true"
+    >
+      {(Object.keys(ARROWS) as Dir[]).map((dir) =>
+        map[dir] ? (
+          <span
+            key={dir}
+            className={`dpad-arrow dpad-${dir} ${active === dir ? 'on' : ''}`}
+          >
+            {ARROWS[dir]}
+          </span>
+        ) : null
+      )}
+    </div>
+  )
 }
 
 export default function TouchControls({ zone }: TouchControlsProps) {
   const onPress = useCallback((key: string) => dispatch('keydown', key), [])
   const onRelease = useCallback((key: string) => dispatch('keyup', key), [])
+  const dpad = useMemo(() => zone.dpad ?? [], [zone.dpad])
 
   return (
     <div className="touch-controls" aria-hidden="true">
-      <div className="nes-dpad">
-        {(['up', 'left', 'right', 'down'] as const).map((dir) => {
-          const entry = zone.dpad?.find((d) => d.dir === dir)
-          return (
-            <div key={dir} className={`dpad-slot dpad-${dir}`}>
-              {entry ? (
-                <HoldButton
-                  keyName={entry.key}
-                  className="dpad-btn"
-                  onPress={onPress}
-                  onRelease={onRelease}
-                >
-                  <span className="dpad-arrow">{ARROWS[dir]}</span>
-                </HoldButton>
-              ) : null}
-            </div>
-          )
-        })}
-        <div className="dpad-center" />
-      </div>
-
-      <div className="nes-actions">
+      <PixelDpad dirs={dpad} />
+      <div className="pixel-actions">
         {zone.actions?.map((a) => (
-          <HoldButton
+          <ActionButton
             key={`${a.variant ?? 'a'}-${a.key}`}
             keyName={a.key}
-            className={`nes-btn nes-${a.variant ?? 'a'} ${
-              a.variant === 'start' ? 'nes-start' : ''
-            }`}
+            className={`pixel-btn pixel-${a.variant ?? 'a'}`}
             onPress={onPress}
             onRelease={onRelease}
           >
             {a.label}
-          </HoldButton>
+          </ActionButton>
         ))}
       </div>
     </div>

@@ -197,7 +197,7 @@ export default function Doom({ onBack }: DoomProps) {
         </div>
       )}
       <div className="doom-controls">
-        ARROWS: move &middot; CTRL: fire &middot; SPACE: open/use &middot; SHIFT: run
+        D-PAD / ARROWS: move &middot; A / CTRL: fire &middot; B / SPACE: use &middot; C / SHIFT: run &middot; BKSP: back
       </div>
       <TouchControls
         zone={{

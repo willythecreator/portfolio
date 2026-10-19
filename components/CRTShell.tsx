@@ -4,9 +4,10 @@ import { useFrame } from '@/lib/FrameTicker'
 
 type CRTShellProps = {
   children: React.ReactNode
+  view?: string
 }
 
-export default function CRTShell({ children }: CRTShellProps) {
+export default function CRTShell({ children, view }: CRTShellProps) {
   const frame = useFrame()
   const ledOpacity = 0.4 + 0.6 * Math.abs(Math.sin(frame * Math.PI / 45))
 
@@ -17,7 +18,7 @@ export default function CRTShell({ children }: CRTShellProps) {
         <div className="screen-inner crt-flicker">
           <div className="scanlines" />
           <div className="vignette" />
-          <div className="content">
+          <div className="content" data-view={view}>
             {children}
           </div>
         </div>

@@ -87,7 +87,7 @@ function AppContent() {
 
   return (
     <main>
-      <CRTShell>
+      <CRTShell view={state.view}>
         {state.view === 'boot' && (
           <BootSequence onComplete={() => setState({ view: 'scan' })} />
         )}

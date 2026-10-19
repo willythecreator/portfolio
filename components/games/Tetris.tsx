@@ -42,6 +42,7 @@ interface GameState {
   level: number
   lines: number
   gameOver: boolean
+  paused: boolean
   dropTimer: number
   lastTime: number
   lockDelay: number
@@ -161,6 +162,7 @@ export default function Tetris({ onBack }: TetrisProps) {
     level: 1,
     lines: 0,
     gameOver: false,
+    paused: false,
     dropTimer: 0,
     lastTime: 0,
     lockDelay: 0,
@@ -297,6 +299,7 @@ export default function Tetris({ onBack }: TetrisProps) {
     s.level = 1
     s.lines = 0
     s.gameOver = false
+    s.paused = false
     s.dropTimer = 0
     s.lockDelay = 0
     s.locking = false
@@ -326,11 +329,18 @@ export default function Tetris({ onBack }: TetrisProps) {
       s.keys[e.key] = true
       s.keyTimers[e.key] = 0
 
-      if (s.gameOver) {
-        if (e.key === 'Enter') initGame()
-        if (e.key === 'Escape' || e.key === 'Backspace') onBack()
+      if (e.key === 'Escape' || e.key === 'Backspace') {
+        onBack()
         return
       }
+
+      if (e.key === 'Enter') {
+        if (s.gameOver) initGame()
+        else s.paused = !s.paused
+        return
+      }
+
+      if (s.gameOver || s.paused) return
 
       if (!s.current) return
 
@@ -392,7 +402,7 @@ export default function Tetris({ onBack }: TetrisProps) {
 
     const update = (dt: number) => {
       const s = stateRef.current
-      if (s.gameOver || !s.current) return
+      if (s.gameOver || !s.current || s.paused) return
 
       // DAS for left/right
       for (const key of ['ArrowLeft', 'a', 'ArrowRight', 'd']) {
@@ -562,6 +572,19 @@ export default function Tetris({ onBack }: TetrisProps) {
       ctx.font = '18px "Share Tech Mono", monospace'
       ctx.fillText(String(s.lines), hudX, hudY + 22)
 
+      // Pause overlay
+      if (s.paused && !s.gameOver) {
+        ctx.fillStyle = 'rgba(0, 10, 2, 0.7)'
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
+        ctx.fillStyle = PRIMARY
+        ctx.font = '28px "Share Tech Mono", monospace'
+        const pmsg = 'PAUSED'
+        ctx.fillText(pmsg, CANVAS_W / 2 - ctx.measureText(pmsg).width / 2, CANVAS_H / 2 - 10)
+        ctx.fillStyle = '#1a8f3d'
+        ctx.font = '13px "Share Tech Mono", monospace'
+        ctx.fillText('PRESS START TO RESUME', CANVAS_W / 2 - 90, CANVAS_H / 2 + 25)
+      }
+
       // Game over overlay
       if (s.gameOver) {
         ctx.fillStyle = 'rgba(0, 10, 2, 0.85)'
@@ -576,7 +599,7 @@ export default function Tetris({ onBack }: TetrisProps) {
         ctx.fillText(scoreMsg, CANVAS_W / 2 - ctx.measureText(scoreMsg).width / 2, CANVAS_H / 2 + 5)
         ctx.fillStyle = '#1a8f3d'
         ctx.font = '13px "Share Tech Mono", monospace'
-        ctx.fillText('ENTER TO RESTART', CANVAS_W / 2 - 80, CANVAS_H / 2 + 35)
+        ctx.fillText('PRESS START TO RESTART', CANVAS_W / 2 - 100, CANVAS_H / 2 + 35)
         ctx.fillText('ESC / BACKSPACE TO EXIT', CANVAS_W / 2 - 110, CANVAS_H / 2 + 55)
       }
     }
@@ -614,7 +637,7 @@ export default function Tetris({ onBack }: TetrisProps) {
         onTouchMove={(e) => e.preventDefault()}
       />
       <div className="doom-controls" style={{ fontSize: 10 }}>
-        ARROW KEYS / WASD: move &middot; UP: rotate &middot; SPACE: drop &middot; C: hold &middot; ENTER: restart &middot; ESC: back &middot; BKSP: back
+        D-PAD / ARROWS: move &middot; A / UP: rotate &middot; B / SPACE: drop &middot; C: hold &middot; START / ENTER: pause &middot; BKSP: back
       </div>
       <TouchControls
         zone={{
