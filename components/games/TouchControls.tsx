@@ -79,23 +79,184 @@ function dispatch(type: 'keydown' | 'keyup', key: string) {
 
 const MIN_HOLD_MS = 80
 
-const ARROWS: Record<Dir, string> = {
-  up: '\u25b2',
-  down: '\u25bc',
-  left: '\u25c0',
-  right: '\u25b6',
+/* ── Pixel sprites ───────────────────────────────────────────────────────────
+   Each sprite is a grid of chars. '#' = lit block, '.' = empty. They are
+   rendered as square <rect> pixels with crispEdges so the edges never blur. */
+
+type Sprite = string[]
+
+/* Chunky 8-bit arrows (7x7) — one triangle-with-tail, rotated per direction
+   so all four read exactly the same. */
+const ARROW_UP: Sprite = [
+  '..#..',
+  '.###.',
+  '#####',
+]
+
+const ARROW_DOWN: Sprite = [
+  '#####',
+  '.###.',
+  '..#..',
+]
+
+const ARROW_LEFT: Sprite = [
+  '..#',
+  '.##',
+  '###',
+  '.##',
+  '..#',
+]
+
+const ARROW_RIGHT: Sprite = [
+  '#..',
+  '##.',
+  '###',
+  '##.',
+  '#..',
+]
+
+const ARROWS: Record<Dir, Sprite> = {
+  up: ARROW_UP,
+  down: ARROW_DOWN,
+  left: ARROW_LEFT,
+  right: ARROW_RIGHT,
+}
+
+/* Round action button (14x14) — an 8-bit "circle": a stepped disc of pixels
+   with a chunky rim. '#' = rim, '.' = empty. */
+const BTN_RING: Sprite = [
+  '....######....',
+  '..##########..',
+  '.############.',
+  '.############.',
+  '##############',
+  '##############',
+  '##############',
+  '##############',
+  '##############',
+  '##############',
+  '.############.',
+  '.############.',
+  '..##########..',
+  '....######....',
+]
+
+const BTN_FACE: Sprite = [
+  '..............',
+  '..............',
+  '....######....',
+  '...########...',
+  '..##########..',
+  '..##########..',
+  '..##########..',
+  '..##########..',
+  '..##########..',
+  '..##########..',
+  '...########...',
+  '....######....',
+  '..............',
+  '..............',
+]
+
+/* Cross-shaped d-pad plate (15x15) — solid green rim. Arm width 5, centred
+   on columns 5..9 so every edge is a clean pixel step. Outer corners are
+   beveled by one pixel for the classic 8-bit "cross" silhouette. */
+const DPAD_PLATE: Sprite = [
+  '.....#####.....',
+  '.....#####.....',
+  '.....#####.....',
+  '.....#####.....',
+  '.....#####.....',
+  '###############',
+  '###############',
+  '###############',
+  '###############',
+  '###############',
+  '.....#####.....',
+  '.....#####.....',
+  '.....#####.....',
+  '.....#####.....',
+  '.....#####.....',
+]
+
+/* Cross inset by one pixel — the raised face (same cross silhouette as the
+   plate but 1px smaller). Rendered with a bevel so it reads as a solid,
+   sculpted button instead of a hollow cut-out. */
+const DPAD_FACE: Sprite = [
+  '...............',
+  '......###......',
+  '......###......',
+  '......###......',
+  '......###......',
+  '......###......',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '......###......',
+  '......###......',
+  '......###......',
+  '......###......',
+  '......###......',
+  '...............',
+]
+
+/* Renders a sprite as SVG squares. scale = pixel size in the viewBox. */
+function PixelSprite({
+  sprite,
+  className,
+  width,
+  on,
+}: {
+  sprite: Sprite
+  className?: string
+  width: number
+  on?: string
+}) {
+  const rows = sprite.length
+  const cols = sprite[0].length
+  const blocks: Array<[number, number, string]> = []
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const c = sprite[y][x]
+      if (c !== '.') blocks.push([x, y, c])
+    }
+  }
+  return (
+    <svg
+      viewBox={`0 0 ${cols} ${rows}`}
+      width={width}
+      height={(width * rows) / cols}
+      className={className}
+      shapeRendering="crispEdges"
+      aria-hidden="true"
+    >
+      {blocks.map(([x, y, c], i) => (
+        <rect
+          key={i}
+          x={x}
+          y={y}
+          width={1.02}
+          height={1.02}
+          fill={c === 'o' ? '#0a2c12' : on && c === '#' ? on : undefined}
+          className={c === '#' ? 'px-lit' : undefined}
+        />
+      ))}
+    </svg>
+  )
 }
 
 /* A single tap/hold action button (A / B / C / START). */
 function ActionButton({
   keyName,
   className,
+  variant,
   children,
   onPress,
   onRelease,
 }: {
   keyName: string
   className: string
+  variant?: 'a' | 'b' | 'c' | 'start'
   children: ReactNode
   onPress: (key: string) => void
   onRelease: (key: string) => void
@@ -156,7 +317,13 @@ function ActionButton({
       onContextMenu={(e) => e.preventDefault()}
       aria-label={keyName}
     >
-      {children}
+      {variant !== 'start' && (
+        <span className="pixel-btn-art" aria-hidden="true">
+          <PixelSprite sprite={BTN_RING} className="btn-ring" width={72} />
+          <PixelSprite sprite={BTN_FACE} className="btn-face" width={72} />
+        </span>
+      )}
+      <span className="pixel-btn-label">{children}</span>
     </button>
   )
 }
@@ -297,14 +464,16 @@ function PixelDpad({ dirs }: { dirs: DpadKey[] }) {
       onContextMenu={(e) => e.preventDefault()}
       aria-hidden="true"
     >
+      <PixelSprite sprite={DPAD_PLATE} className="dpad-plate" width={180} />
+      <PixelSprite sprite={DPAD_FACE} className="dpad-face" width={180} />
       {(Object.keys(ARROWS) as Dir[]).map((dir) =>
         map[dir] ? (
-          <span
+          <PixelSprite
             key={dir}
+            sprite={ARROWS[dir]}
             className={`dpad-arrow dpad-${dir} ${active === dir ? 'on' : ''}`}
-          >
-            {ARROWS[dir]}
-          </span>
+            width={52}
+          />
         ) : null
       )}
     </div>
@@ -324,6 +493,7 @@ export default function TouchControls({ zone }: TouchControlsProps) {
           <ActionButton
             key={`${a.variant ?? 'a'}-${a.key}`}
             keyName={a.key}
+            variant={a.variant ?? 'a'}
             className={`pixel-btn pixel-${a.variant ?? 'a'}`}
             onPress={onPress}
             onRelease={onRelease}
