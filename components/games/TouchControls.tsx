@@ -307,7 +307,6 @@ function PixelDpad({ dirs }: { dirs: DpadKey[] }) {
           </span>
         ) : null
       )}
-      <div className="dpad-hub" />
     </div>
   )
 }
