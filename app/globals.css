@@ -991,6 +991,7 @@ body {
   margin: 8px auto 0;
   padding: 6px 14px 16px;
   touch-action: none;
+  pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
   image-rendering: pixelated;
@@ -1011,6 +1012,7 @@ body {
   height: 180px;
   flex: 0 0 auto;
   touch-action: none;
+  pointer-events: auto;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -1021,6 +1023,8 @@ body {
   position: absolute;
   inset: 0;
   display: block;
+  width: 100%;
+  height: 100%;
   overflow: visible;
   shape-rendering: crispEdges;
   image-rendering: pixelated;
@@ -1050,36 +1054,36 @@ body {
   fill: #0d5225;
 }
 
-/* up / down: 5x3 -> 60x36 */
+/* up / down: 5x3 sprite -> 33.33% wide, centred on the vertical arm */
 .pixel-dpad .dpad-up,
 .pixel-dpad .dpad-down {
-  width: 60px !important;
+  width: 33.33% !important;
 }
 
 .pixel-dpad .dpad-up {
-  top: -1px;
-  left: 60px;
+  top: -0.55%;
+  left: 33.33%;
 }
 
 .pixel-dpad .dpad-down {
-  top: 145px;
-  left: 60px;
+  top: 80.55%;
+  left: 33.33%;
 }
 
-/* left / right: 3x5 -> 36x60 */
+/* left / right: 3x5 sprite -> 20% wide, centred on the horizontal arm */
 .pixel-dpad .dpad-left,
 .pixel-dpad .dpad-right {
-  width: 36px !important;
+  width: 20% !important;
 }
 
 .pixel-dpad .dpad-left {
-  top: 60px;
-  left: -1px;
+  top: 33.33%;
+  left: -0.55%;
 }
 
 .pixel-dpad .dpad-right {
-  top: 60px;
-  left: 145px;
+  top: 33.33%;
+  left: 80.55%;
 }
 
 .pixel-dpad .dpad-arrow.on rect {
@@ -1093,6 +1097,7 @@ body {
   align-items: end;
   justify-items: center;
   gap: 20px;
+  pointer-events: auto;
 }
 
 .pixel-btn {
@@ -1131,6 +1136,8 @@ body {
   position: absolute;
   inset: 0;
   display: block;
+  width: 100%;
+  height: 100%;
   overflow: visible;
   shape-rendering: crispEdges;
   image-rendering: pixelated;
@@ -1203,6 +1210,7 @@ body {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
+  white-space: nowrap;
   text-shadow: 2px 2px 0 #021007;
   image-rendering: pixelated;
   clip-path: polygon(
@@ -1213,6 +1221,10 @@ body {
   transition: transform 0.03s;
 }
 
+.pixel-start:only-child {
+  grid-column: 1 / -1;
+}
+
 .pixel-start:active {
   transform: translate(3px, 3px);
   background: #33ff66;
@@ -1221,26 +1233,55 @@ body {
   filter: drop-shadow(1px 1px 0 #000);
 }
 
-@media (hover: none) and (pointer: coarse) and (max-width: 360px) {
+@media (hover: none) and (pointer: coarse) and (orientation: portrait) and (max-width: 540px) {
   .touch-controls {
-    gap: 20px;
-    padding: 6px 8px 16px;
+    gap: 14px;
+    padding: 6px 10px 14px;
   }
   .pixel-dpad {
-    transform: scale(0.86);
-    transform-origin: left bottom;
+    width: 140px;
+    height: 140px;
   }
   .pixel-actions {
-    gap: 14px;
+    grid-template-columns: repeat(2, auto);
+    gap: 12px;
   }
   .pixel-btn {
-    width: 62px;
-    height: 62px;
+    width: 64px;
+    height: 64px;
     font-size: 20px;
   }
   .pixel-start {
+    grid-column: auto;
     height: 38px;
-    font-size: 11px;
+    padding: 0 10px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (orientation: portrait) and (max-width: 360px) {
+  .touch-controls {
+    gap: 10px;
+    padding: 6px 8px 14px;
+  }
+  .pixel-dpad {
+    width: 120px;
+    height: 120px;
+  }
+  .pixel-actions {
+    gap: 10px;
+  }
+  .pixel-btn {
+    width: 54px;
+    height: 54px;
+    font-size: 17px;
+  }
+  .pixel-start {
+    height: 34px;
+    padding: 0 8px;
+    font-size: 9px;
+    letter-spacing: 0.04em;
   }
 }
 
@@ -1495,16 +1536,55 @@ body {
   .space-invaders-canvas,
   .tetris > canvas,
   .pacman > canvas {
-    max-height: calc(100dvh - 10px) !important;
-    max-width: calc(100vw - 300px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    max-width: calc(100vw - 320px) !important;
     width: auto !important;
     height: auto !important;
     margin: 0;
   }
 
   .doom-screen {
-    max-width: min(calc(100vw - 300px), calc((100dvh - 10px) * 1.6));
-    max-height: calc(100dvh - 10px);
+    max-width: min(calc(100vw - 320px), calc((100dvh - 24px) * 1.6));
+    max-height: calc(100dvh - 24px);
+  }
+
+  .touch-controls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-width: none;
+    margin: 0;
+    gap: 16px;
+    padding:
+      4px max(14px, env(safe-area-inset-right))
+      calc(8px + env(safe-area-inset-bottom))
+      max(14px, env(safe-area-inset-left));
+    z-index: 20;
+  }
+
+  .pixel-dpad {
+    width: 132px;
+    height: 132px;
+  }
+
+  .pixel-actions {
+    grid-template-columns: repeat(2, auto);
+    gap: 12px;
+  }
+
+  .pixel-btn {
+    width: 62px;
+    height: 62px;
+    font-size: 19px;
+  }
+
+  .pixel-start {
+    grid-column: auto;
+    height: 36px;
+    padding: 0 12px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
   }
 
   .doom-controls,
