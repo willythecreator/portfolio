@@ -77,7 +77,7 @@ export default function ProjectsSection({ onBack, onSelectProject }: ProjectsSec
       </div>
 
       <div style={{ fontSize: 11, color: 'var(--arcbyte-green-dim)', marginBottom: 8 }}>
-        TAB: switch category · ????: navigate · SPACE: open · ESC: back
+        TAB: switch category ï¿½ ????: navigate ï¿½ SPACE: open ï¿½ ESC: back
       </div>
 
       <div className="projects-grid">
