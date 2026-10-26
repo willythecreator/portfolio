@@ -274,26 +274,26 @@ body {
 
 @media (max-width: 640px) {
   .content {
-    padding: 10px 12px;
+    padding: 8px 10px;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
   }
   .menu-banner {
-    font-size: 4px;
-    line-height: 1.0;
+    font-size: 3.5px;
+    line-height: 0.95;
     overflow-x: auto;
   }
   .neofetch {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     align-items: flex-start;
   }
   .boot-skip-hint {
     display: none !important;
   }
   .boot {
-    font-size: 11px;
-    min-height: 400px;
+    font-size: 10px;
+    min-height: 350px;
   }
   .projects-grid {
     grid-template-columns: 1fr;
@@ -302,15 +302,21 @@ body {
     padding: 10px;
   }
   .ascii-art {
-    font-size: 5.5px;
-    line-height: 0.95;
+    font-size: 2.8px;
+    line-height: 0.72;
     overflow-x: auto;
+    overflow-y: auto;
     max-width: 100%;
+    display: block;
+    white-space: pre;
   }
   .project-detail-ascii {
     overflow-x: auto;
+    overflow-y: auto;
     max-width: 100%;
-    padding: 6px;
+    width: 100%;
+    max-height: 50vh;
+    padding: 2px;
   }
   .project-detail {
     flex-direction: column;
@@ -326,11 +332,17 @@ body {
     flex-wrap: wrap;
   }
   .projects-tab {
-    font-size: 10px;
-    padding: 4px 8px;
+    font-size: 9px;
+    padding: 3px 6px;
   }
   .projects-hint {
     display: none !important;
+  }
+  .section-title {
+    font-size: 11px;
+  }
+  .section-divider {
+    font-size: 9px;
   }
 }
 

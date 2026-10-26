@@ -101,9 +101,9 @@ export default function ProjectDetail({ slug, onBack }: ProjectDetailProps) {
       </div>
 
       {hasAnimation ? (
-        <div className="project-detail">
-          <div className="project-detail-ascii frame frame-focused" data-label="[ VISUALIZATION ]">
-            <pre className="ascii-art">{asciiContent}</pre>
+        <div className="project-detail" style={{ flexWrap: 'wrap', flexDirection: 'column' }}>
+          <div className="project-detail-ascii frame frame-focused" data-label="[ VISUALIZATION ]" style={{ overflowX: 'auto', overflowY: 'auto', maxWidth: '100%', width: '100%', maxHeight: '55vh' }}>
+            <pre className="ascii-art" style={{ margin: 0, fontSize: '3px', lineHeight: '0.75' }}>{asciiContent}</pre>
           </div>
           {infoPanel}
         </div>
