@@ -59,12 +59,14 @@ body {
     to bottom,
     transparent 0px,
     transparent 2px,
-    rgba(0, 0, 0, 0.08) 2px,
-    rgba(0, 0, 0, 0.08) 3px
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 3px
   );
   pointer-events: none;
   z-index: 10;
   mix-blend-mode: soft-light;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* Vignette */
@@ -74,7 +76,7 @@ body {
   background: radial-gradient(
     ellipse at center,
     transparent 55%,
-    rgba(0, 0, 0, 0.5) 100%
+    rgba(0, 0, 0, 0.4) 100%
   );
   pointer-events: none;
   z-index: 11;
@@ -105,15 +107,15 @@ body {
 .content span,
 .content div {
   text-shadow:
-    0 0 6px var(--arcbyte-green),
-    0 0 16px rgba(51, 255, 102, 0.35),
-    0 0 40px rgba(51, 255, 102, 0.15);
+    0 0 4px var(--arcbyte-green),
+    0 0 12px rgba(51, 255, 102, 0.25),
+    0 0 24px rgba(51, 255, 102, 0.12);
 }
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .scanlines {
-    opacity: 0.4;
+    opacity: 0.3;
   }
   .boot-line,
   .about,
@@ -272,18 +274,63 @@ body {
 
 @media (max-width: 640px) {
   .content {
-    padding: 12px 14px;
+    padding: 10px 12px;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
   .menu-banner {
-    font-size: 4.5px;
-    line-height: 1.05;
+    font-size: 4px;
+    line-height: 1.0;
     overflow-x: auto;
   }
   .neofetch {
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
     align-items: flex-start;
+  }
+  .boot-skip-hint {
+    display: none !important;
+  }
+  .boot {
+    font-size: 11px;
+    min-height: 400px;
+  }
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+  .project-card {
+    padding: 10px;
+  }
+  .ascii-art {
+    font-size: 5.5px;
+    line-height: 0.95;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  .project-detail-ascii {
+    overflow-x: auto;
+    max-width: 100%;
+    padding: 6px;
+  }
+  .project-detail {
+    flex-direction: column;
+  }
+  .project-detail-info {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .doom-controls {
+    display: none !important;
+  }
+  .projects-tabs {
+    flex-wrap: wrap;
+  }
+  .projects-tab {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+  .projects-hint {
+    display: none !important;
   }
 }
 
@@ -305,9 +352,9 @@ body {
 .ascii-art {
   font-family: var(--arcbyte-font);
   font-size: 11px;
-  line-height: 1.3;
+  line-height: 1.2;
   color: var(--arcbyte-green);
-  text-shadow: 0 0 8px var(--arcbyte-green);
+  text-shadow: 0 0 6px var(--arcbyte-green);
   white-space: pre;
 }
 

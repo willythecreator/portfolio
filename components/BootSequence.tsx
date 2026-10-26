@@ -107,7 +107,7 @@ export default function BootSequence({ onComplete }: Props) {
 
     return (
         <div className="boot" onClick={skip} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); skip() } }}>
-            <div style={{ position: 'absolute', top: 8, right: 12, fontSize: 11, color: 'var(--arcbyte-green-dim)', opacity: 0.6 }}>
+            <div className="boot-skip-hint" style={{ position: 'absolute', top: 8, right: 12, fontSize: 11, color: 'var(--arcbyte-green-dim)', opacity: 0.6 }}>
                 [PRESS ENTER/SPACE/ESC OR CLICK TO SKIP]
             </div>
             {phase === 'noise' && (
