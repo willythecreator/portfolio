@@ -98,6 +98,8 @@ const cspReportOnly = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
+  reactStrictMode: true,
   async headers() {
     return [
       {

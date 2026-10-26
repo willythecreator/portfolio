@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 type Phase = 'noise' | 'bios' | 'pause' | 'hook' | 'done'
 
@@ -33,8 +33,27 @@ export default function BootSequence({ onComplete }: Props) {
     const [visibleLines, setVisibleLines] = useState<number>(0)
     const [showHook, setShowHook] = useState(false)
     const [showHook2, setShowHook2] = useState(false)
+    const [skipped, setSkipped] = useState(false)
+
+    const skip = useCallback(() => {
+        if (skipped) return
+        setSkipped(true)
+        onComplete()
+    }, [skipped, onComplete])
 
     useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === 'Escape' || e.key === ' ') {
+                e.preventDefault()
+                skip()
+            }
+        }
+        window.addEventListener('keydown', handler)
+        return () => window.removeEventListener('keydown', handler)
+    }, [skip])
+
+    useEffect(() => {
+        if (skipped) return
         if (phase === 'noise') {
             const interval = setInterval(() => {
                 setNoiseText(randomNoise(80))
@@ -48,9 +67,10 @@ export default function BootSequence({ onComplete }: Props) {
                 clearTimeout(timeout)
             }
         }
-    }, [phase])
+    }, [phase, skipped])
 
     useEffect(() => {
+        if (skipped) return
         if (phase === 'bios') {
             BIOS_LINES.forEach((line, i) => {
                 setTimeout(() => {
@@ -61,25 +81,35 @@ export default function BootSequence({ onComplete }: Props) {
                 }, line.delay)
             })
         }
-    }, [phase])
+    }, [phase, skipped])
 
     useEffect(() => {
+        if (skipped) return
         if (phase === 'pause') {
             const timeout = setTimeout(() => setPhase('hook'), 1000)
             return () => clearTimeout(timeout)
         }
-    }, [phase])
+    }, [phase, skipped])
 
     useEffect(() => {
+        if (skipped) return
         if (phase === 'hook') {
-            setTimeout(() => setShowHook(true), 200)
-            setTimeout(() => setShowHook2(true), 1200)
-            setTimeout(() => onComplete(), 2800)
+            const t1 = setTimeout(() => setShowHook(true), 200)
+            const t2 = setTimeout(() => setShowHook2(true), 1200)
+            const t3 = setTimeout(() => onComplete(), 2800)
+            return () => {
+                clearTimeout(t1)
+                clearTimeout(t2)
+                clearTimeout(t3)
+            }
         }
-    }, [phase, onComplete])
+    }, [phase, onComplete, skipped])
 
     return (
-        <div className="boot">
+        <div className="boot" onClick={skip} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); skip() } }}>
+            <div style={{ position: 'absolute', top: 8, right: 12, fontSize: 11, color: 'var(--arcbyte-green-dim)', opacity: 0.6 }}>
+                [PRESS ENTER/SPACE/ESC OR CLICK TO SKIP]
+            </div>
             {phase === 'noise' && (
                 <div className="boot-noise">{noiseText}</div>
             )}

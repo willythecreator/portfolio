@@ -1,0 +1,11 @@
+
+> arcbyte-os@0.1.0 dev
+> next dev
+
+▲ Next.js 16.4.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.192.32:3000
+✓ Ready in 1070ms
+✓ Running next.config.ts took 79ms
+
+ GET / 200 in 830ms (next.js: 556ms, application-code: 274ms)

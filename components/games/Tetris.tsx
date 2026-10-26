@@ -55,13 +55,13 @@ interface GameState {
 }
 
 const PIECE_COLORS: Record<PieceType, string> = {
-  I: '#33ff66',
-  O: '#aaffaa',
-  T: '#66ff88',
-  S: '#44dd66',
-  Z: '#22cc44',
-  J: '#11bb33',
-  L: '#88ffaa',
+  I: '#00ffff',
+  O: '#ffff00',
+  T: '#a000f0',
+  S: '#00ff00',
+  Z: '#ff0000',
+  J: '#0000ff',
+  L: '#ff7f00',
 }
 
 const SHAPES: Record<PieceType, number[][][]> = {

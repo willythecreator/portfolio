@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import CRTShell from '@/components/CRTShell'
 import BootSequence from '@/components/BootSequence'
 import ScanSequence from '@/components/ScanSequence'
@@ -9,15 +10,22 @@ import AboutSection from '@/components/sections/AboutSection'
 import ProjectsSection from '@/components/sections/ProjectsSection'
 import ProjectDetail from '@/components/sections/ProjectDetail'
 import GamesSection from '@/components/sections/GamesSection'
-import SpaceInvaders from '@/components/games/SpaceInvaders'
-import Tetris from '@/components/games/Tetris'
-import PacMan from '@/components/games/PacMan'
-import Doom from '@/components/games/Doom'
 import Terminal from '@/components/terminal/Terminal'
 import { skullArt } from '@/lib/ascii-art/skull'
 import { rotateSkullArt } from '@/lib/ascii-art/rotate-skull'
 import { FrameTicker } from '@/lib/FrameTicker'
 import { NavigationProvider, useNav } from '@/lib/NavigationProvider'
+
+const GameLoading = () => (
+  <div style={{ padding: '40px', textAlign: 'center', color: 'var(--arcbyte-green-dim)' }}>
+    [LOADING GAME...]
+  </div>
+)
+
+const SpaceInvaders = dynamic(() => import('@/components/games/SpaceInvaders'), { ssr: false, loading: GameLoading })
+const Tetris = dynamic(() => import('@/components/games/Tetris'), { ssr: false, loading: GameLoading })
+const PacMan = dynamic(() => import('@/components/games/PacMan'), { ssr: false, loading: GameLoading })
+const Doom = dynamic(() => import('@/components/games/Doom'), { ssr: false, loading: GameLoading })
 
 type ViewState =
   | { view: 'boot' }

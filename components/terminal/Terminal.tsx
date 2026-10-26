@@ -26,6 +26,15 @@ export default function Terminal({ onBack }: TerminalProps) {
   const outputRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Nano editor state
+  const [nanoMode, setNanoMode] = useState(false)
+  const [nanoFile, setNanoFile] = useState('')
+  const [nanoContent, setNanoContent] = useState('')
+  const [nanoOriginal, setNanoOriginal] = useState('')
+  const [nanoCursorX, setNanoCursorX] = useState(0)
+  const [nanoCursorY, setNanoCursorY] = useState(0)
+  const [nanoStatus, setNanoStatus] = useState('')
+
   useEffect(() => {
     if (outputRef.current) {
       outputRef.current.scrollTop = outputRef.current.scrollHeight
@@ -65,6 +74,7 @@ export default function Terminal({ onBack }: TerminalProps) {
           { type: 'output', text: '  ls [path]         List directory contents' },
           { type: 'output', text: '  cd <path>         Change directory' },
           { type: 'output', text: '  cat <file>        Display file contents' },
+          { type: 'output', text: '  nano <file>       Edit file (nano-like editor)' },
           { type: 'output', text: '  pwd               Print working directory' },
           { type: 'output', text: '  whoami            Display current user' },
           { type: 'output', text: '  uname             Display system info' },
@@ -185,6 +195,38 @@ export default function Terminal({ onBack }: TerminalProps) {
         addLines({ type: 'output', text: args.join(' ') })
         break
 
+      case 'nano': {
+        if (!args[0]) {
+          addLines({ type: 'error', text: 'nano: missing file operand' })
+          break
+        }
+        let filePath = args[0]
+        if (filePath.startsWith('~')) {
+          filePath = filePath.slice(1) || '/'
+        } else if (!filePath.startsWith('/')) {
+          filePath = cwd + (cwd.endsWith('/') ? '' : '/') + filePath
+        }
+        const node = resolvePath(fs.current, filePath)
+        let content = ''
+        if (node) {
+          if (node.type === 'dir') {
+            addLines({ type: 'error', text: `nano: ${args[0]}: Is a directory` })
+            break
+          }
+          content = node.content || ''
+        }
+        // If file doesn't exist, create empty buffer
+        setNanoFile(filePath)
+        setNanoOriginal(content)
+        setNanoContent(content)
+        setNanoCursorX(0)
+        setNanoCursorY(0)
+        setNanoStatus(`New File    ${args[0]}`)
+        setNanoMode(true)
+        setLines([])
+        break
+      }
+
       case 'neofetch': {
         const nf = [
           ...arcbyteArt,
@@ -231,7 +273,136 @@ export default function Terminal({ onBack }: TerminalProps) {
     }
   }, [addLines, prompt, cwd, history, onBack])
 
+  const saveNanoFile = useCallback(() => {
+    const filePath = nanoFile
+    const parts = filePath.split('/').filter(Boolean)
+    let current: any = fs.current
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!current.children[parts[i]]) {
+        current.children[parts[i]] = { type: 'dir', name: parts[i], children: {} }
+      }
+      current = current.children[parts[i]]
+    }
+    const fileName = parts[parts.length - 1] || 'untitled'
+    if (!current.children) current.children = {}
+    if (current.children[fileName]) {
+      current.children[fileName].content = nanoContent
+    } else {
+      current.children[fileName] = { type: 'file', name: fileName, content: nanoContent }
+    }
+    setNanoOriginal(nanoContent)
+    setNanoStatus(`[ Wrote ${nanoContent.split('\n').length} lines ]`)
+    setTimeout(() => setNanoStatus(`File: ${filePath}`), 1500)
+  }, [nanoFile, nanoContent])
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (nanoMode) {
+      e.preventDefault()
+      if (e.key === 'x' && e.ctrlKey) {
+        if (nanoContent !== nanoOriginal) {
+          setNanoStatus('Save modified buffer?  Y Yes  N No  ^C Cancel')
+          const handler = (ev: KeyboardEvent) => {
+            if (ev.key.toLowerCase() === 'y') {
+              saveNanoFile()
+              setNanoMode(false)
+              setLines([{ type: 'success', text: `Wrote ${nanoFile}` }])
+              window.removeEventListener('keydown', handler)
+            } else if (ev.key.toLowerCase() === 'n') {
+              setNanoMode(false)
+              setLines([{ type: 'output', text: `Exited without saving` }])
+              window.removeEventListener('keydown', handler)
+            } else if (ev.key === 'c' && ev.ctrlKey) {
+              setNanoStatus(`File: ${nanoFile}`)
+              window.removeEventListener('keydown', handler)
+            }
+          }
+          window.addEventListener('keydown', handler)
+          return
+        }
+        setNanoMode(false)
+        setLines([{ type: 'output', text: `Exited` }])
+        return
+      }
+      if (e.key === 'o' && e.ctrlKey) {
+        saveNanoFile()
+        return
+      }
+      if (e.key === 'Enter') {
+        const lines = nanoContent.split('\n')
+        const currentLine = lines[nanoCursorY] || ''
+        const before = currentLine.slice(0, nanoCursorX)
+        const after = currentLine.slice(nanoCursorX)
+        lines[nanoCursorY] = before
+        lines.splice(nanoCursorY + 1, 0, after)
+        setNanoContent(lines.join('\n'))
+        setNanoCursorY(nanoCursorY + 1)
+        setNanoCursorX(0)
+        return
+      }
+      if (e.key === 'Backspace') {
+        const lines = nanoContent.split('\n')
+        if (nanoCursorX === 0 && nanoCursorY > 0) {
+          const prevLine = lines[nanoCursorY - 1]
+          const currentLine = lines[nanoCursorY]
+          lines[nanoCursorY - 1] = prevLine + currentLine
+          lines.splice(nanoCursorY, 1)
+          setNanoContent(lines.join('\n'))
+          setNanoCursorY(nanoCursorY - 1)
+          setNanoCursorX(prevLine.length)
+        } else if (nanoCursorX > 0) {
+          const currentLine = lines[nanoCursorY] || ''
+          lines[nanoCursorY] = currentLine.slice(0, nanoCursorX - 1) + currentLine.slice(nanoCursorX)
+          setNanoContent(lines.join('\n'))
+          setNanoCursorX(nanoCursorX - 1)
+        }
+        return
+      }
+      if (e.key === 'ArrowUp') {
+        if (nanoCursorY > 0) {
+          setNanoCursorY(nanoCursorY - 1)
+          const lines = nanoContent.split('\n')
+          setNanoCursorX(Math.min(nanoCursorX, (lines[nanoCursorY - 1] || '').length))
+        }
+        return
+      }
+      if (e.key === 'ArrowDown') {
+        const lines = nanoContent.split('\n')
+        if (nanoCursorY < lines.length - 1) {
+          setNanoCursorY(nanoCursorY + 1)
+          setNanoCursorX(Math.min(nanoCursorX, (lines[nanoCursorY + 1] || '').length))
+        }
+        return
+      }
+      if (e.key === 'ArrowLeft') {
+        if (nanoCursorX > 0) setNanoCursorX(nanoCursorX - 1)
+        else if (nanoCursorY > 0) {
+          setNanoCursorY(nanoCursorY - 1)
+          const lines = nanoContent.split('\n')
+          setNanoCursorX((lines[nanoCursorY - 1] || '').length)
+        }
+        return
+      }
+      if (e.key === 'ArrowRight') {
+        const lines = nanoContent.split('\n')
+        const currentLine = lines[nanoCursorY] || ''
+        if (nanoCursorX < currentLine.length) setNanoCursorX(nanoCursorX + 1)
+        else if (nanoCursorY < lines.length - 1) {
+          setNanoCursorY(nanoCursorY + 1)
+          setNanoCursorX(0)
+        }
+        return
+      }
+      if (e.key.length === 1 && !e.ctrlKey && !e.altKey) {
+        const lines = nanoContent.split('\n')
+        const currentLine = lines[nanoCursorY] || ''
+        lines[nanoCursorY] = currentLine.slice(0, nanoCursorX) + e.key + currentLine.slice(nanoCursorX)
+        setNanoContent(lines.join('\n'))
+        setNanoCursorX(nanoCursorX + 1)
+        return
+      }
+      return
+    }
+
     if (e.key === 'Enter') {
       execCommand(input)
       setInput('')
@@ -270,6 +441,49 @@ export default function Terminal({ onBack }: TerminalProps) {
       e.preventDefault()
       setLines([])
     }
+  }
+
+  if (nanoMode) {
+    const linesArr = nanoContent.split('\n')
+    return (
+      <div className="terminal" style={{ padding: 0 }}>
+        <div style={{ background: '#001a08', color: '#33ff66', padding: '4px 8px', borderBottom: '1px solid #003315', fontSize: '12px' }}>
+          GNU nano 2.9.3
+        </div>
+        <div style={{ padding: '8px', fontSize: '13px', lineHeight: '1.4', overflowY: 'auto', height: 'calc(100% - 60px)' }}>
+          {linesArr.map((line, i) => (
+            <div key={i} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+              {i === nanoCursorY ? (
+                <>
+                  {line.slice(0, nanoCursorX)}
+                  <span style={{ background: '#33ff66', color: '#000' }}>{line[nanoCursorX] || ' '}</span>
+                  {line.slice(nanoCursorX + 1)}
+                </>
+              ) : (
+                line || ' '
+              )}
+            </div>
+          ))}
+        </div>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+          <div style={{ background: '#001a08', color: '#33ff66', padding: '2px 8px', fontSize: '11px', borderTop: '1px solid #003315' }}>
+            {nanoStatus || `File: ${nanoFile}`}
+          </div>
+          <div style={{ background: '#001a08', color: '#1a8f3d', padding: '4px 8px', fontSize: '11px', display: 'flex', flexWrap: 'wrap', gap: '12px', borderTop: '1px solid #003315' }}>
+            <span>^O Write Out</span>
+            <span>^X Exit</span>
+            <span>^R Read File</span>
+            <span>^W Where Is</span>
+          </div>
+        </div>
+        <input
+          ref={inputRef}
+          onKeyDown={handleKeyDown}
+          style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+          autoFocus
+        />
+      </div>
+    )
   }
 
   return (
