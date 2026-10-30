@@ -66,29 +66,12 @@ GitHub:     github.com/willythecreator/Schwarzschild-black-hole-geodesic-tracer
 Numerically integrates geodesic equations in Schwarzschild
 spacetime to trace photon trajectories.`,
                       },
-                      'three-body.txt': {
-                        type: 'file',
-                        name: 'three-body.txt',
-                        content: `Project:    Three-Body Problem Visualizer
-Language:   Python / NumPy / Matplotlib
-
-Interactive simulation of the classical three-body problem
-using a symplectic integrator.`,
-                      },
                     },
                   },
                   'graphics': {
                     type: 'dir',
                     name: 'graphics',
                     children: {
-                      'mandelbrot.txt': {
-                        type: 'file',
-                        name: 'mandelbrot.txt',
-                        content: `Project:    Mandelbrot Set Renderer
-Language:   C / SDL2
-
-High-performance Mandelbrot renderer with deep zoom support.`,
-                      },
                       'spinning-donut.txt': {
                         type: 'file',
                         name: 'spinning-donut.txt',
@@ -97,20 +80,6 @@ Language:   C
 GitHub:     github.com/willythecreator/Spinning-Donut
 
 The classic ASCII torus renderer.`,
-                      },
-                    },
-                  },
-                  'tools': {
-                    type: 'dir',
-                    name: 'tools',
-                    children: {
-                      'sorting-visualizer.txt': {
-                        type: 'file',
-                        name: 'sorting-visualizer.txt',
-                        content: `Project:    Sorting Algorithm Visualizer
-Language:   Python / Pygame
-
-Side-by-side visualization of sorting algorithms.`,
                       },
                     },
                   },

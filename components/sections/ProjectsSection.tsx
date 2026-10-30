@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { PROJECTS, CATEGORIES, type ProjectCategory } from '@/lib/data/projects'
 import { useNav } from '@/lib/NavigationProvider'
-import { lockArt } from '@/lib/ascii-art/lock'
 
 interface ProjectsSectionProps {
   onBack: () => void
@@ -77,7 +76,7 @@ export default function ProjectsSection({ onBack, onSelectProject }: ProjectsSec
       </div>
 
       <div style={{ fontSize: 11, color: 'var(--arcbyte-green-dim)', marginBottom: 8 }}>
-        TAB: switch category � ????: navigate � SPACE: open � ESC: back
+        TAB: switch category · ↑↓←→: navigate · SPACE: open · ESC: back
       </div>
 
       <div className="projects-grid">
@@ -91,14 +90,6 @@ export default function ProjectsSection({ onBack, onSelectProject }: ProjectsSec
             <div className="project-card-name">{'> '}{project.name}</div>
             <div className="project-card-desc">{project.description}</div>
             <div className="project-card-tech">{project.tech.join(' / ')}</div>
-            {!project.github && (
-              <div className="project-lock">
-                <pre className="project-lock-icon">{lockArt.join('\n')}</pre>
-                <div className="project-lock-msg">
-                  <strong>[LOCKED]</strong> in construction
-                </div>
-              </div>
-            )}
           </div>
         ))}
       </div>

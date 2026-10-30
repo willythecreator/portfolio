@@ -153,6 +153,15 @@ body {
   to   { opacity: 1; }
 }
 
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(51, 255, 102, 0.25)); }
+  50% { filter: drop-shadow(0 0 16px rgba(51, 255, 102, 0.4)); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
 @keyframes slideup {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -274,18 +283,18 @@ body {
 
 @media (max-width: 640px) {
   .content {
-    padding: 8px 10px;
+    padding: 6px 8px;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
   }
   .menu-banner {
-    font-size: 3.5px;
-    line-height: 0.95;
+    font-size: 4px;
+    line-height: 1.0;
     overflow-x: auto;
   }
   .neofetch {
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     align-items: flex-start;
   }
   .boot-skip-hint {
@@ -293,7 +302,7 @@ body {
   }
   .boot {
     font-size: 10px;
-    min-height: 350px;
+    min-height: 340px;
   }
   .projects-grid {
     grid-template-columns: 1fr;
@@ -302,20 +311,22 @@ body {
     padding: 10px;
   }
   .ascii-art {
-    font-size: 2.8px;
-    line-height: 0.72;
+    font-size: 2.2px;
+    line-height: 0.68;
     overflow-x: auto;
     overflow-y: auto;
     max-width: 100%;
     display: block;
     white-space: pre;
+    transform: scale(0.98);
+    transform-origin: left top;
   }
   .project-detail-ascii {
     overflow-x: auto;
     overflow-y: auto;
     max-width: 100%;
     width: 100%;
-    max-height: 50vh;
+    max-height: 52vh;
     padding: 2px;
   }
   .project-detail {
@@ -325,7 +336,9 @@ body {
     min-width: 0;
     max-width: 100%;
   }
-  .doom-controls {
+  .doom-controls,
+  .space-invaders-controls,
+  .tetris-controls {
     display: none !important;
   }
   .projects-tabs {
@@ -339,10 +352,16 @@ body {
     display: none !important;
   }
   .section-title {
-    font-size: 11px;
+    font-size: 10px;
   }
   .section-divider {
-    font-size: 9px;
+    font-size: 8px;
+  }
+  .menu-item {
+    padding: 10px 12px;
+  }
+  .menu-item-title {
+    font-size: 13px;
   }
 }
 
@@ -431,22 +450,23 @@ body {
   content: attr(data-label);
   position: absolute;
   top: -1px;
-  left: 12px;
+  left: 14px;
   background: var(--arcbyte-bg);
-  padding: 0 6px;
+  padding: 0 8px;
   font-size: 11px;
   color: var(--arcbyte-green-dim);
   transform: translateY(-50%);
+  z-index: 2;
 }
 
 .frame-focused {
   border-color: var(--arcbyte-green);
-  box-shadow: 0 0 8px rgba(51, 255, 102, 0.15), inset 0 0 20px rgba(51, 255, 102, 0.02);
+  box-shadow: 0 0 10px rgba(51, 255, 102, 0.18), inset 0 0 24px rgba(51, 255, 102, 0.03);
 }
 
 .frame-focused::before {
   color: var(--arcbyte-green);
-  text-shadow: 0 0 6px var(--arcbyte-green);
+  text-shadow: 0 0 8px var(--arcbyte-green);
 }
 
 /* ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â */
@@ -471,8 +491,8 @@ body {
 
 @media (max-width: 640px) {
   .menu-header {
-    font-size: 9px;
-    letter-spacing: 0.02em;
+    font-size: 8px;
+    letter-spacing: 0.01em;
   }
 }
 
@@ -485,13 +505,15 @@ body {
 .menu-banner {
   font-family: var(--arcbyte-font);
   font-size: 11px;
-  line-height: 1.2;
-  color: var(--arcbyte-green-dim);
+  line-height: 1.12;
+  color: var(--arcbyte-green);
   white-space: pre;
-  opacity: 0.6;
-  margin-bottom: 4px;
+  opacity: 0.95;
+  margin-bottom: 6px;
   overflow-x: auto;
   max-width: 100%;
+  text-shadow: 0 0 12px rgba(51, 255, 102, 0.5), 0 0 36px rgba(51, 255, 102, 0.22);
+  filter: drop-shadow(0 0 20px rgba(51, 255, 102, 0.16));
 }
 
 @media (max-width: 768px) {
@@ -521,16 +543,18 @@ body {
 
 .menu-item {
   border: 1px solid var(--arcbyte-border);
-  padding: 10px 14px;
+  padding: 12px 16px;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
   position: relative;
+  background: linear-gradient(180deg, rgba(51, 255, 102, 0.02) 0%, transparent 100%);
 }
 
 .menu-item.focused {
   border-color: var(--arcbyte-green);
-  background: rgba(51, 255, 102, 0.05);
-  box-shadow: 0 0 14px rgba(51, 255, 102, 0.16), inset 0 0 40px rgba(51, 255, 102, 0.03);
+  background: linear-gradient(180deg, rgba(51, 255, 102, 0.08) 0%, rgba(51, 255, 102, 0.03) 100%);
+  box-shadow: 0 0 18px rgba(51, 255, 102, 0.22), inset 0 0 60px rgba(51, 255, 102, 0.05);
+  transform: translateY(-2px);
 }
 
 .menu-item.focused .menu-item-title {
@@ -547,7 +571,8 @@ body {
 
 .menu-item.focused .menu-item-top,
 .menu-item.focused .menu-item-bottom {
-  color: var(--arcbyte-green-dim);
+  color: var(--arcbyte-green);
+  text-shadow: 0 0 8px rgba(51, 255, 102, 0.5);
 }
 
 .menu-item-icon {
@@ -561,16 +586,17 @@ body {
 }
 
 .menu-item-title {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--arcbyte-green);
-  text-shadow: 0 0 8px var(--arcbyte-green);
+  text-shadow: 0 0 10px var(--arcbyte-green), 0 0 20px rgba(51, 255, 102, 0.3);
   margin-bottom: 4px;
+  letter-spacing: 0.08em;
 }
 
 .menu-item-desc {
   font-size: 11px;
   color: var(--arcbyte-green-dim);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .menu-hint {
@@ -757,69 +783,6 @@ body {
   color: var(--arcbyte-amber);
 }
 
-.project-lock {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  padding: 4px;
-  background: rgba(2, 12, 4, 0.9);
-  opacity: 0;
-  transition: opacity 0.15s;
-  pointer-events: none;
-  text-align: center;
-  container-type: size;
-}
-
-.project-card:hover .project-lock,
-.project-card.focused .project-lock {
-  opacity: 1;
-}
-
-.project-lock-icon {
-  --lock-cols: 32;
-  --lock-rows: 21;
-  margin: 0;
-  /* Fit to card: 88% of width (0.54em = Share Tech Mono advance) or 72% of height,
-     whichever is smaller, so the ASCII padlock scales with the card. */
-  font-size: min(
-    calc(88cqw / (var(--lock-cols) * 0.54)),
-    calc(72cqh / var(--lock-rows))
-  );
-  line-height: 1;
-  letter-spacing: 0;
-  font-family: var(--arcbyte-font);
-  color: var(--arcbyte-amber);
-  text-shadow: 0 0 2px var(--arcbyte-amber);
-  white-space: pre;
-  overflow: hidden;
-}
-
-.project-lock-msg {
-  max-width: 95%;
-  font-size: 7px;
-  line-height: 1.2;
-  color: var(--arcbyte-amber);
-  text-shadow: 0 0 4px var(--arcbyte-amber);
-}
-
-.project-lock-msg strong {
-  color: var(--arcbyte-green);
-  text-shadow: 0 0 6px var(--arcbyte-green);
-}
-
-.project-detail-locked {
-  margin-top: 12px;
-  padding: 8px 10px;
-  border: 1px dashed var(--arcbyte-amber);
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--arcbyte-amber);
-}
-
 /* Project Detail */
 .project-detail {
   display: flex;
@@ -849,27 +812,38 @@ body {
 .project-detail-ascii {
   flex-shrink: 0;
   width: 100%;
-  max-width: 900px;
+  max-width: 980px;
   border: 1px solid var(--arcbyte-border);
-  padding: 16px;
+  padding: 12px;
   display: flex;
   align-items: flex-start;
-  justify-content: center;
-  overflow: hidden;
+  justify-content: safe center;
+  overflow: auto;
+  max-height: 62vh;
   position: relative;
+  container-type: inline-size;
 }
 
 @media (min-width: 1024px) {
   .project-detail-ascii {
-    width: 70%;
+    width: 75%;
   }
 }
 
 /* Handled via .frame[data-label] */
 
 .project-detail-ascii .ascii-art {
-  font-size: 11px;
-  line-height: 1.2;
+  margin: 0;
+  /* Scale to the container width so nothing is cropped on mobile.
+     --ascii-cols is set from the frame data in ProjectDetail.tsx.
+     0.55 is the advance width of Share Tech Mono (measured 0.5495em). */
+  font-size: min(9px, calc(100cqw / (var(--ascii-cols, 80) * 0.55)));
+  /* Share Tech Mono cells are ~0.55em wide, so a 1.26 line-height gives each
+     cell the taller shape these generated frames expect, which removes the
+     horizontal stretch. */
+  line-height: 1.26;
+  flex-shrink: 0;
+  transform: none;
 }
 
 .project-detail-info {
@@ -1375,11 +1349,13 @@ body {
 }
 
 .space-invaders-canvas {
-  border: 1px solid var(--arcbyte-border);
+  border: 1px solid var(--arcbyte-green-dim);
   image-rendering: pixelated;
   max-width: 100%;
   height: auto;
   touch-action: none;
+  box-shadow: 0 0 40px rgba(51, 255, 102, 0.15), inset 0 0 60px rgba(51, 255, 102, 0.05);
+  border-radius: 2px;
 }
 
 .space-invaders-controls {

@@ -20,7 +20,7 @@ export type ProjectCategory =
   | 'Tools & Algorithms'
   | 'Games'
 
-export const CATEGORIES: ProjectCategory[] = [
+const CATEGORY_ORDER: ProjectCategory[] = [
   'Emulation',
   'Physics & Cosmology',
   'Graphics & Fractals',
@@ -28,7 +28,7 @@ export const CATEGORIES: ProjectCategory[] = [
   'Games',
 ]
 
-export const PROJECTS: Project[] = [
+const ALL_PROJECTS: Project[] = [
   {
     slug: 'advance-pocket',
     name: 'Advance-Pocket',
@@ -308,3 +308,12 @@ export const PROJECTS: Project[] = [
     tech: ['Python'],
   },
 ]
+
+// Only projects that can actually be viewed (public repository) are listed.
+// Projects without a link are considered "locked" and are hidden from the UI.
+export const PROJECTS: Project[] = ALL_PROJECTS.filter((project) => Boolean(project.github))
+
+// Categories are derived from the visible projects so empty tabs never show up.
+export const CATEGORIES: ProjectCategory[] = CATEGORY_ORDER.filter((category) =>
+  PROJECTS.some((project) => project.category === category)
+)

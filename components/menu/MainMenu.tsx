@@ -4,6 +4,7 @@ import { useEffect, useCallback } from 'react'
 import { useNav } from '@/lib/NavigationProvider'
 import { useSpin } from '@/lib/FrameTicker'
 import { arcbyteArt } from '@/lib/ascii-art/text-arcbyte'
+import { PROJECTS, CATEGORIES } from '@/lib/data/projects'
 
 interface MenuItemData {
   icon: string
@@ -17,7 +18,7 @@ interface MainMenuProps {
 
 const ITEMS: MenuItemData[] = [
   { icon: '>_ ', title: 'TERMINAL', description: 'Full interactive shell — type commands, explore the filesystem' },
-  { icon: '// ', title: 'PROJECTS', description: '28 projects across 5 categories — physics, emulation, graphics' },
+  { icon: '// ', title: 'PROJECTS', description: `${PROJECTS.length} projects across ${CATEGORIES.length} categories — physics, emulation, graphics` },
   { icon: '>> ', title: 'GAMES', description: 'Play minigames rendered in the CRT terminal' },
   { icon: '[] ', title: 'ABOUT', description: 'Who is behind ArcByte OS — skills, focus, philosophy' },
   { icon: ':: ', title: 'SYSTEM', description: 'Neofetch — system information and ASCII banner' },
@@ -60,17 +61,17 @@ export default function MainMenu({ onNavigate }: MainMenuProps) {
       <pre className="menu-banner pulse-glow">{arcbyteArt.join('\n')}</pre>
 
       <div className="menu-header">
-        <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'╔' + '═'.repeat(56) + '╗'}</span>
+        <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'╔' + '═'.repeat(64) + '╗'}</span>
         <br />
         <span>{'║ '}</span>
         <span style={{ color: 'var(--arcbyte-green-dim)' }}>{spinChar}</span>
-        <span>{' ArcByte OS v0.97 '}</span>
+        <span>{' ARCBYTE OS v0.97 '}</span>
         <span style={{ color: 'var(--arcbyte-green-dim)' }}>{spinChar}</span>
-        <span>{' — ←↑↓→/WASD | SPACE/ENTER | TAP'}</span>
-        <span>{' — MADE BY WILLY '}</span>
-        <span style={{ color: 'var(--arcbyte-green-dim)' }}>{' ║'}</span>
+        <span>{' • NAV: ←↑↓→ / WASD • SEL: SPACE/ENTER • TAP ENABLED '}</span>
+        <span>{'• MADE BY WILLY '}</span>
+        <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'║'}</span>
         <br />
-        <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'╚' + '═'.repeat(56) + '╝'}</span>
+        <span style={{ color: 'var(--arcbyte-green-dim)' }}>{'╚' + '═'.repeat(64) + '╝'}</span>
       </div>
 
       <div className="menu-grid">
@@ -92,7 +93,7 @@ export default function MainMenu({ onNavigate }: MainMenuProps) {
               }}
             >
               <div className="menu-item-top">
-                {focused ? '┌' : '├'}{'─'.repeat(20)}{focused ? '┐' : '┤'}
+                {focused ? '╔' : '╠'}{'═'.repeat(22)}{focused ? '╗' : '╣'}
               </div>
               <div className="menu-item-icon">
                 {focused ? spinChar : ' '} {item.icon}
@@ -100,7 +101,7 @@ export default function MainMenu({ onNavigate }: MainMenuProps) {
               <div className="menu-item-title">{item.title}</div>
               <div className="menu-item-desc">{item.description}</div>
               <div className="menu-item-bottom">
-                {focused ? '└' : '└'}{'─'.repeat(20)}{focused ? '┘' : '┘'}
+                {focused ? '╚' : '╚'}{'═'.repeat(22)}{focused ? '╝' : '╝'}
               </div>
             </div>
           )

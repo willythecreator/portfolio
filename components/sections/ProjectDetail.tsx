@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState, useMemo, type CSSProperties } from 'react'
 import { PROJECTS } from '@/lib/data/projects'
 import { useFrame } from '@/lib/FrameTicker'
 
@@ -16,6 +16,15 @@ export default function ProjectDetail({ slug, onBack }: ProjectDetailProps) {
   const [startFrame] = useState(frame)
 
   const hasAnimation = project?.asciiArtFrames && project.asciiArtFrames.length > 0
+
+  // Measure the art grid once so it can be scaled to the container width
+  // without distorting it (see .project-detail-ascii in globals.css).
+  const artCols = useMemo(() => {
+    const frames = project?.asciiArtFrames
+    if (!frames || frames.length === 0) return null
+    return frames[0].reduce((max, line) => Math.max(max, line.length), 1)
+  }, [project])
+
   const currentFrame = (() => {
     if (!hasAnimation) return 0
     const frames = project!.asciiArtFrames!
@@ -74,7 +83,7 @@ export default function ProjectDetail({ slug, onBack }: ProjectDetailProps) {
         {project.longDescription}
       </div>
 
-      {project.github ? (
+      {project.github && (
         <div className="project-detail-links">
           <a
             className="project-link"
@@ -85,10 +94,6 @@ export default function ProjectDetail({ slug, onBack }: ProjectDetailProps) {
             [GitHub]
           </a>
         </div>
-      ) : (
-        <div className="project-detail-locked">
-          [ LOCKED ] Repository in construction — source is private.
-        </div>
       )}
     </div>
   )
@@ -96,14 +101,19 @@ export default function ProjectDetail({ slug, onBack }: ProjectDetailProps) {
   return (
     <div className="section">
       <div className="section-header">
-        <div className="section-title">╔══ {project.name.toUpperCase().slice(0, 40)} ══╗</div>
-        <div className="section-divider">╚{'═'.repeat(46)}╝</div>
+        <div className="section-title">╔══ {project.name.toUpperCase().slice(0, 48)} ══╗</div>
+        <div className="section-divider">╚{'═'.repeat(54)}╝</div>
       </div>
 
       {hasAnimation ? (
         <div className="project-detail" style={{ flexWrap: 'wrap', flexDirection: 'column' }}>
-          <div className="project-detail-ascii frame frame-focused" data-label="[ VISUALIZATION ]" style={{ overflowX: 'auto', overflowY: 'auto', maxWidth: '100%', width: '100%', maxHeight: '55vh' }}>
-            <pre className="ascii-art" style={{ margin: 0, fontSize: '3px', lineHeight: '0.75' }}>{asciiContent}</pre>
+          <div className="project-detail-ascii frame frame-focused" data-label="[ VISUALIZATION ]">
+            <pre
+              className="ascii-art"
+              style={artCols ? ({ '--ascii-cols': artCols } as CSSProperties) : undefined}
+            >
+              {asciiContent}
+            </pre>
           </div>
           {infoPanel}
         </div>

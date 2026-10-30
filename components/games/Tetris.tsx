@@ -19,9 +19,9 @@ const CANVAS_H = 480
 
 const BG = '#000a02'
 const PRIMARY = '#33ff66'
-const GRID_COLOR = '#0a2a10'
-const BORDER_COLOR = '#1a8f3d'
-const GHOST_ALPHA = 0.25
+const GRID_COLOR = '#0f2f18'
+const BORDER_COLOR = '#22ff66'
+const GHOST_ALPHA = 0.18
 
 type PieceType = 'I' | 'O' | 'T' | 'S' | 'Z' | 'J' | 'L'
 
@@ -55,13 +55,13 @@ interface GameState {
 }
 
 const PIECE_COLORS: Record<PieceType, string> = {
-  I: '#00ffff',
-  O: '#ffff00',
-  T: '#a000f0',
-  S: '#00ff00',
-  Z: '#ff0000',
-  J: '#0000ff',
-  L: '#ff7f00',
+  I: '#33ffff',
+  O: '#ffff33',
+  T: '#ff33ff',
+  S: '#33ff88',
+  Z: '#ff3355',
+  J: '#3366ff',
+  L: '#ff9933',
 }
 
 const SHAPES: Record<PieceType, number[][][]> = {
@@ -462,10 +462,10 @@ export default function Tetris({ onBack }: TetrisProps) {
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
 
       // Play field background
-      ctx.fillStyle = '#001205'
+      ctx.fillStyle = '#000f06'
       ctx.fillRect(FIELD_X, FIELD_Y, COLS * CELL, ROWS * CELL)
 
-      // Grid lines
+      // Subtle glow grid lines
       ctx.strokeStyle = GRID_COLOR
       ctx.lineWidth = 1
       for (let r = 0; r <= ROWS; r++) {
@@ -662,12 +662,14 @@ export default function Tetris({ onBack }: TetrisProps) {
 function drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string) {
   ctx.fillStyle = color
   ctx.fillRect(x + 1, y + 1, size - 2, size - 2)
-  ctx.fillStyle = 'rgba(255,255,255,0.12)'
+  ctx.fillStyle = 'rgba(255,255,255,0.18)'
   ctx.fillRect(x + 1, y + 1, size - 2, 2)
   ctx.fillRect(x + 1, y + 1, 2, size - 2)
-  ctx.fillStyle = 'rgba(0,0,0,0.25)'
+  ctx.fillStyle = 'rgba(0,0,0,0.35)'
   ctx.fillRect(x + size - 3, y + 1, 2, size - 2)
   ctx.fillRect(x + 1, y + size - 3, size - 2, 2)
+  ctx.fillStyle = 'rgba(255,255,255,0.08)'
+  ctx.fillRect(x + 2, y + 2, size - 4, 1)
 }
 
 function drawMiniPiece(ctx: CanvasRenderingContext2D, x: number, y: number, type: PieceType, alpha: number) {

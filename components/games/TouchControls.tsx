@@ -16,6 +16,7 @@ export type ActionKey = { key: string; label: string; variant?: 'a' | 'b' | 'c' 
 export interface ControllerZone {
   dpad?: DpadKey[]
   actions?: ActionKey[]
+  joystick?: boolean
 }
 
 interface TouchControlsProps {

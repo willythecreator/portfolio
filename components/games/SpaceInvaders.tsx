@@ -7,12 +7,12 @@ interface SpaceInvadersProps {
   onBack: () => void
 }
 
-const CANVAS_W = 640
-const CANVAS_H = 480
-const PLAYER_W = 44
-const PLAYER_H = 18
+const CANVAS_W = 760
+const CANVAS_H = 580
+const PLAYER_W = 52
+const PLAYER_H = 26
 const BULLET_W = 3
-const BULLET_H = 10
+const BULLET_H = 12
 
 type AlienKind = 0 | 1 | 2
 type WeaponType = 'single' | 'spread' | 'laser'
@@ -25,6 +25,7 @@ interface Alien {
   hp: number
   maxHp: number
   isBoss: boolean
+  phase: number
 }
 
 interface Bullet {
@@ -53,7 +54,7 @@ interface PowerUp {
 const ALIEN_COLORS: Record<AlienKind, string> = {
   0: '#33ff66',
   1: '#4fffb0',
-  2: '#ffb347',
+  2: '#ff9933',
 }
 
 export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
@@ -62,13 +63,11 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
   useEffect(() => { onBackRef.current = onBack }, [onBack])
 
   const stateRef = useRef({
-    player: { x: CANVAS_W / 2 - PLAYER_W / 2, y: CANVAS_H - 75 },
+    player: { x: CANVAS_W / 2 - PLAYER_W / 2, y: CANVAS_H - 80 },
     aliens: [] as Alien[],
     alienDirX: 1,
-    alienDirY: 0,
-    alienSpeed: 0.9,
     alienMoveTimer: 0,
-    alienMoveInterval: 16,
+    alienMoveInterval: 14,
     bullets: [] as Bullet[],
     shields: [] as Shield[],
     powerups: [] as PowerUp[],
@@ -96,65 +95,47 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
 
     if (level % 5 === 0) {
       s.aliens.push({
-        x: CANVAS_W / 2 - 70,
-        y: 35,
+        x: CANVAS_W / 2 - 80,
+        y: 30,
         kind: 2,
         alive: true,
-        hp: 60 + level * 12,
-        maxHp: 60 + level * 12,
+        hp: 80 + level * 15,
+        maxHp: 80 + level * 15,
         isBoss: true,
+        phase: 0,
       })
       s.bossActive = true
-      s.alienSpeed = 1.4
-      s.alienMoveInterval = 10
+      s.alienMoveInterval = 9
     } else {
-      const cols = Math.min(11, 7 + Math.floor(level / 2))
-      const rows = Math.min(7, 4 + Math.floor(level / 3))
-      const aw = 30
-      const ah = 20
-      const padX = 10
-      const padY = 10
+      const cols = Math.min(12, 8 + Math.floor(level / 2))
+      const rows = Math.min(8, 5 + Math.floor(level / 3))
+      const aw = 28
+      const ah = 18
+      const padX = 12
+      const padY = 12
       const startX = (CANVAS_W - (cols * (aw + padX) - padX)) / 2
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
           const kind = (row % 3) as AlienKind
           s.aliens.push({
             x: startX + col * (aw + padX),
-            y: 40 + row * (ah + padY),
+            y: 45 + row * (ah + padY),
             kind,
             alive: true,
-            hp: 1 + Math.floor(level / 4),
-            maxHp: 1 + Math.floor(level / 4),
+            hp: 1 + Math.floor(level / 5),
+            maxHp: 1 + Math.floor(level / 5),
             isBoss: false,
+            phase: row,
           })
         }
       }
-      s.alienSpeed = 0.7 + level * 0.18
-      s.alienMoveInterval = Math.max(7, 22 - level)
+      s.alienMoveInterval = Math.max(6, 24 - level * 1.2)
     }
 
     s.shields = []
-    const shieldSpacing = CANVAS_W / 5
-    for (let i = 0; i < 4; i++) {
-      const sx = shieldSpacing * (i + 1) - 26
-      const sy = CANVAS_H - 160
-      const blocks: boolean[][] = []
-      for (let r = 0; r < 12; r++) {
-        const row: boolean[] = []
-        for (let c = 0; c < 18; c++) {
-          const cx = c - 9
-          const cy = r - 6
-          row.push(Math.sqrt(cx * cx + cy * cy) < 9)
-        }
-        blocks.push(row)
-      }
-      s.shields.push({ x: sx, y: sy, blocks })
-    }
-
     s.alienDirX = 1
-    s.alienDirY = 0
     s.alienMoveTimer = 0
-    s.player.x = Math.max(0, Math.min(CANVAS_W - PLAYER_W, s.player.x))
+    s.player.x = Math.max(10, Math.min(CANVAS_W - PLAYER_W - 10, s.player.x))
   }, [])
 
   const initGame = useCallback(() => {
@@ -167,7 +148,7 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
     s.paused = false
     s.weapon = 'single'
     s.weaponTimer = 0
-    s.player.y = CANVAS_H - 75
+    s.player.y = CANVAS_H - 85
     initLevel(1)
   }, [initLevel])
 
@@ -181,7 +162,7 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
 
     const onKeyDown = (e: KeyboardEvent) => {
       stateRef.current.keys[e.key] = true
-      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) e.preventDefault()
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'].includes(e.key)) e.preventDefault()
     }
     const onKeyUp = (e: KeyboardEvent) => {
       stateRef.current.keys[e.key] = false
@@ -193,18 +174,18 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
       const s = stateRef.current
       if (s.gameOver || s.paused || s.won) return
       const now = Date.now()
-      const rate = s.weapon === 'laser' ? 120 : s.weapon === 'spread' ? 180 : 200
+      const rate = s.weapon === 'laser' ? 100 : s.weapon === 'spread' ? 160 : 190
       if (now - s.lastShot < rate) return
       s.lastShot = now
 
       if (s.weapon === 'spread') {
-        s.bullets.push({ x: s.player.x + PLAYER_W / 2 - 1, y: s.player.y, vx: -2, vy: -12, fromPlayer: true, damage: 1 })
-        s.bullets.push({ x: s.player.x + PLAYER_W / 2 - 1, y: s.player.y, vx: 0, vy: -13, fromPlayer: true, damage: 1 })
-        s.bullets.push({ x: s.player.x + PLAYER_W / 2 - 1, y: s.player.y, vx: 2, vy: -12, fromPlayer: true, damage: 1 })
+        s.bullets.push({ x: s.player.x + PLAYER_W / 2 - 1, y: s.player.y + 2, vx: -2.5, vy: -13, fromPlayer: true, damage: 1 })
+        s.bullets.push({ x: s.player.x + PLAYER_W / 2 - 1, y: s.player.y + 2, vx: 0, vy: -14, fromPlayer: true, damage: 1 })
+        s.bullets.push({ x: s.player.x + PLAYER_W / 2 - 1, y: s.player.y + 2, vx: 2.5, vy: -13, fromPlayer: true, damage: 1 })
       } else if (s.weapon === 'laser') {
-        s.bullets.push({ x: s.player.x + PLAYER_W / 2 - 2, y: s.player.y, vx: 0, vy: -16, fromPlayer: true, damage: 2 })
+        s.bullets.push({ x: s.player.x + PLAYER_W / 2 - 2, y: s.player.y + 2, vx: 0, vy: -18, fromPlayer: true, damage: 3 })
       } else {
-        s.bullets.push({ x: s.player.x + PLAYER_W / 2 - 1, y: s.player.y, vx: 0, vy: -12, fromPlayer: true, damage: 1 })
+        s.bullets.push({ x: s.player.x + PLAYER_W / 2 - 1, y: s.player.y + 2, vx: 0, vy: -14, fromPlayer: true, damage: 1 })
       }
     }
 
@@ -213,13 +194,13 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
       if (s.gameOver || s.paused || s.won) return
       s.frame++
 
-      const speed = 6
-      if (s.keys['ArrowLeft'] || s.keys['a']) s.player.x -= speed
-      if (s.keys['ArrowRight'] || s.keys['d']) s.player.x += speed
-      if (s.keys['ArrowUp'] || s.keys['w']) s.player.y -= speed
-      if (s.keys['ArrowDown'] || s.keys['s']) s.player.y += speed
-      s.player.x = Math.max(0, Math.min(CANVAS_W - PLAYER_W, s.player.x))
-      s.player.y = Math.max(CANVAS_H - 200, Math.min(CANVAS_H - PLAYER_H - 5, s.player.y))
+      const spd = 7
+      if (s.keys['ArrowLeft'] || s.keys['a'] || s.keys['A']) s.player.x -= spd
+      if (s.keys['ArrowRight'] || s.keys['d'] || s.keys['D']) s.player.x += spd
+      if (s.keys['ArrowUp'] || s.keys['w'] || s.keys['W']) s.player.y -= spd
+      if (s.keys['ArrowDown'] || s.keys['s'] || s.keys['S']) s.player.y += spd
+      s.player.x = Math.max(6, Math.min(CANVAS_W - PLAYER_W - 6, s.player.x))
+      s.player.y = Math.max(20, Math.min(CANVAS_H - PLAYER_H - 4, s.player.y))
 
       if (s.keys[' '] || s.keys['x']) shoot()
 
@@ -234,14 +215,15 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
         let hitEdge = false
         for (const a of s.aliens) {
           if (!a.alive) continue
-          a.x += s.alienDirX * s.alienSpeed * 4
-          if (a.x < 4 || a.x > CANVAS_W - 40) hitEdge = true
+          const aw = a.isBoss ? 160 : 28
+          a.x += s.alienDirX * (a.isBoss ? 2.2 : 1.6)
+          if (a.x < 8 || a.x + aw > CANVAS_W - 8) hitEdge = true
         }
         if (hitEdge) {
           s.alienDirX *= -1
           for (const a of s.aliens) {
-            if (!a.alive) continue
-            a.y += 16
+            if (!a.alive || a.isBoss) continue
+            a.y += 14
           }
         }
       }
@@ -249,23 +231,33 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
       if (s.bossActive) {
         const boss = s.aliens.find(a => a.isBoss && a.alive)
         if (boss) {
-          boss.x += Math.sin(s.frame * 0.05) * 3
-          boss.x = Math.max(20, Math.min(CANVAS_W - 160, boss.x))
+          boss.x += Math.sin(s.frame * 0.04) * 4
+          boss.x = Math.max(10, Math.min(CANVAS_W - 170, boss.x))
+          boss.y += Math.cos(s.frame * 0.03) * 1.2
+          boss.y = Math.max(25, Math.min(90, boss.y))
           s.bossShotTimer++
-          if (s.bossShotTimer > 35) {
+          if (s.bossShotTimer > 28) {
             s.bossShotTimer = 0
-            s.bullets.push({ x: boss.x + 70, y: boss.y + 40, vx: 0, vy: 9, fromPlayer: false, damage: 1 })
-            s.bullets.push({ x: boss.x + 40, y: boss.y + 40, vx: -2.5, vy: 8, fromPlayer: false, damage: 1 })
-            s.bullets.push({ x: boss.x + 100, y: boss.y + 40, vx: 2.5, vy: 8, fromPlayer: false, damage: 1 })
+            const cx = boss.x + 80
+            const cy = boss.y + 40
+            s.bullets.push({ x: cx, y: cy, vx: 0, vy: 10, fromPlayer: false, damage: 1 })
+            s.bullets.push({ x: cx, y: cy, vx: -3, vy: 9, fromPlayer: false, damage: 1 })
+            s.bullets.push({ x: cx, y: cy, vx: 3, vy: 9, fromPlayer: false, damage: 1 })
+            s.bullets.push({ x: cx, y: cy, vx: -1.5, vy: 9.5, fromPlayer: false, damage: 1 })
+            s.bullets.push({ x: cx, y: cy, vx: 1.5, vy: 9.5, fromPlayer: false, damage: 1 })
           }
         }
       }
 
-      if (!s.bossActive && s.frame % 38 === 0) {
+      if (!s.bossActive && s.frame % 32 === 0) {
         const alive = s.aliens.filter(a => a.alive && !a.isBoss)
         if (alive.length > 0) {
-          const shooter = alive[Math.floor(Math.random() * alive.length)]
-          s.bullets.push({ x: shooter.x + 15, y: shooter.y + 20, vx: 0, vy: 8, fromPlayer: false, damage: 1 })
+          const shooters = alive.slice().sort((a,b) => b.y - a.y).slice(0, Math.min(3, alive.length))
+          for (const sh of shooters) {
+            if (Math.random() < 0.6) {
+              s.bullets.push({ x: sh.x + 14, y: sh.y + 18, vx: (Math.random() - 0.5) * 1.5, vy: 9, fromPlayer: false, damage: 1 })
+            }
+          }
         }
       }
 
@@ -273,9 +265,9 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
         p.y += p.vy
         p.life--
         if (p.life <= 0) return false
-        if (p.x < s.player.x + PLAYER_W && p.x + 12 > s.player.x && p.y < s.player.y + PLAYER_H && p.y + 12 > s.player.y) {
+        if (p.x < s.player.x + PLAYER_W && p.x + 14 > s.player.x && p.y < s.player.y + PLAYER_H && p.y + 14 > s.player.y) {
           s.weapon = p.type
-          s.weaponTimer = 700
+          s.weaponTimer = 800
           return false
         }
         return p.y < CANVAS_H
@@ -284,32 +276,32 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
       s.bullets = s.bullets.filter(b => {
         b.x += b.vx
         b.y += b.vy
-        return b.y > -25 && b.y < CANVAS_H + 25 && b.x > -25 && b.x < CANVAS_W + 25
+        return b.y > -30 && b.y < CANVAS_H + 30 && b.x > -30 && b.x < CANVAS_W + 30
       })
 
       for (const b of s.bullets) {
         if (!b.fromPlayer) continue
         for (const a of s.aliens) {
           if (!a.alive) continue
-          const aw = a.isBoss ? 140 : 30
-          const ah = a.isBoss ? 40 : 20
+          const aw = a.isBoss ? 160 : 28
+          const ah = a.isBoss ? 48 : 18
           if (b.x < a.x + aw && b.x + BULLET_W > a.x && b.y < a.y + ah && b.y + BULLET_H > a.y) {
             a.hp -= b.damage
-            b.y = -300
+            b.y = -400
             if (a.hp <= 0) {
               a.alive = false
-              s.score += a.isBoss ? 1500 + s.level * 150 : [18, 28, 45][a.kind] * s.level
-              if (Math.random() < 0.18 && !a.isBoss) {
+              s.score += a.isBoss ? 2000 + s.level * 200 : [22, 38, 58][a.kind] * s.level
+              if (Math.random() < 0.22 && !a.isBoss) {
                 const types: WeaponType[] = ['spread', 'laser']
-                s.powerups.push({ x: a.x, y: a.y, vy: 2.2, type: types[Math.floor(Math.random() * types.length)], life: 950 })
+                s.powerups.push({ x: a.x, y: a.y, vy: 2.4, type: types[Math.floor(Math.random() * types.length)], life: 1000 })
               }
               if (a.isBoss) {
                 s.bossActive = false
                 setTimeout(() => {
                   s.level++
-                  if (s.level > 15) s.won = true
+                  if (s.level > 12) s.won = true
                   else initLevel(s.level)
-                }, 900)
+                }, 1000)
               }
             }
             break
@@ -318,146 +310,173 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
       }
 
       for (const b of s.bullets) {
-        for (const sh of s.shields) {
-          const relX = Math.floor((b.x - sh.x) / 3)
-          const relY = Math.floor((b.y - sh.y) / 3)
-          if (relX >= 0 && relX < (sh.blocks[0]?.length || 0) && relY >= 0 && relY < sh.blocks.length) {
-            if (sh.blocks[relY][relX]) {
-              sh.blocks[relY][relX] = false
-              b.y = b.fromPlayer ? CANVAS_H + 150 : -150
-              break
-            }
-          }
-        }
-      }
-
-      for (const b of s.bullets) {
         if (b.fromPlayer) continue
         if (b.x < s.player.x + PLAYER_W && b.x + BULLET_W > s.player.x && b.y < s.player.y + PLAYER_H && b.y + BULLET_H > s.player.y) {
           s.lives--
-          b.y = CANVAS_H + 150
+          b.y = CANVAS_H + 200
           if (s.lives <= 0) s.gameOver = true
         }
       }
 
       for (const a of s.aliens) {
-        if (a.alive && !a.isBoss && a.y + 22 >= s.player.y) {
+        if (a.alive && !a.isBoss && a.y + 18 >= s.player.y) {
           s.gameOver = true
         }
       }
 
       if (!s.bossActive && s.aliens.every(a => !a.alive)) {
         s.level++
-        if (s.level > 15) s.won = true
+        if (s.level > 12) s.won = true
         else {
           s.paused = true
           setTimeout(() => {
             initLevel(s.level)
             s.paused = false
-          }, 700)
+          }, 650)
         }
       }
     }
 
     const draw = () => {
       const s = stateRef.current
-      ctx.fillStyle = '#000a02'
+      const g = ctx.createLinearGradient(0, 0, 0, CANVAS_H)
+      g.addColorStop(0, '#000a02')
+      g.addColorStop(1, '#000502')
+      ctx.fillStyle = g
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
 
-      ctx.fillStyle = '#22aa44'
-      for (const sh of s.shields) {
-        for (let r = 0; r < sh.blocks.length; r++) {
-          for (let c = 0; c < sh.blocks[r].length; c++) {
-            if (sh.blocks[r][c]) {
-              ctx.fillRect(sh.x + c * 3, sh.y + r * 3, 3, 3)
-            }
-          }
-        }
+      // starfield
+      ctx.fillStyle = '#33ff66'
+      for (let i = 0; i < 40; i++) {
+        const x = (i * 137 + s.frame * 0.3) % CANVAS_W
+        const y = (i * 73 + s.frame * 0.2) % CANVAS_H
+        ctx.globalAlpha = 0.15 + (i % 3) * 0.1
+        ctx.fillRect(x, y, 1, 1)
       }
+      ctx.globalAlpha = 1
 
+      // Aliens
       for (const a of s.aliens) {
         if (!a.alive) continue
         if (a.isBoss) {
-          ctx.fillStyle = '#ff3333'
-          ctx.fillRect(a.x, a.y, 140, 8)
-          ctx.fillRect(a.x + 8, a.y + 8, 124, 12)
-          ctx.fillRect(a.x + 18, a.y + 20, 104, 12)
-          ctx.fillRect(a.x + 40, a.y + 32, 60, 8)
-          ctx.fillStyle = '#222'
-          ctx.fillRect(a.x, a.y - 10, 140, 5)
-          ctx.fillStyle = '#ff5555'
-          ctx.fillRect(a.x, a.y - 10, 140 * Math.max(0, a.hp / a.maxHp), 5)
+          ctx.fillStyle = '#ff2222'
+          ctx.beginPath()
+          ctx.moveTo(a.x + 80, a.y)
+          ctx.lineTo(a.x + 160, a.y + 18)
+          ctx.lineTo(a.x + 150, a.y + 48)
+          ctx.lineTo(a.x + 10, a.y + 48)
+          ctx.lineTo(a.x, a.y + 18)
+          ctx.closePath()
+          ctx.fill()
+          ctx.fillStyle = '#ff6666'
+          ctx.fillRect(a.x + 10, a.y + 20, 140, 6)
+          ctx.fillStyle = '#ffaa66'
+          ctx.fillRect(a.x + 30, a.y + 28, 100, 10)
+          ctx.fillStyle = '#111'
+          ctx.beginPath()
+          ctx.arc(a.x + 60, a.y + 33, 4, 0, Math.PI * 2)
+          ctx.arc(a.x + 100, a.y + 33, 4, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.fillStyle = '#000'
+          ctx.fillRect(a.x + 8, a.y - 10, 144, 6)
+          ctx.fillStyle = '#ff4444'
+          ctx.fillRect(a.x + 8, a.y - 10, 144 * Math.max(0, a.hp / a.maxHp), 6)
         } else {
           ctx.fillStyle = ALIEN_COLORS[a.kind]
           if (a.kind === 0) {
-            ctx.fillRect(a.x + 12, a.y, 6, 4)
-            ctx.fillRect(a.x + 6, a.y + 4, 18, 4)
-            ctx.fillRect(a.x, a.y + 8, 30, 4)
-            ctx.fillRect(a.x + 6, a.y + 12, 6, 4)
-            ctx.fillRect(a.x + 18, a.y + 12, 6, 4)
-            ctx.fillRect(a.x + 6, a.y + 16, 18, 4)
+            ctx.fillRect(a.x + 12, a.y, 4, 4)
+            ctx.fillRect(a.x + 6, a.y + 4, 16, 4)
+            ctx.fillRect(a.x + 2, a.y + 8, 24, 4)
+            ctx.fillRect(a.x + 2, a.y + 12, 8, 6)
+            ctx.fillRect(a.x + 18, a.y + 12, 8, 6)
+            ctx.fillStyle = '#000'
+            ctx.fillRect(a.x + 10, a.y + 9, 3, 2)
+            ctx.fillRect(a.x + 15, a.y + 9, 3, 2)
+            ctx.fillStyle = ALIEN_COLORS[a.kind]
           } else if (a.kind === 1) {
-            ctx.fillRect(a.x + 4, a.y, 22, 4)
-            ctx.fillRect(a.x, a.y + 4, 30, 8)
-            ctx.fillRect(a.x + 6, a.y + 12, 6, 8)
-            ctx.fillRect(a.x + 18, a.y + 12, 6, 8)
+            ctx.fillRect(a.x + 4, a.y, 20, 4)
+            ctx.fillRect(a.x, a.y + 4, 28, 6)
+            ctx.fillRect(a.x + 2, a.y + 10, 24, 6)
+            ctx.fillRect(a.x + 6, a.y + 16, 6, 4)
+            ctx.fillRect(a.x + 16, a.y + 16, 6, 4)
+            ctx.fillStyle = '#000'
+            ctx.fillRect(a.x + 9, a.y + 6, 3, 3)
+            ctx.fillRect(a.x + 16, a.y + 6, 3, 3)
+            ctx.fillStyle = ALIEN_COLORS[a.kind]
           } else {
-            ctx.fillRect(a.x + 12, a.y, 6, 6)
-            ctx.fillRect(a.x + 6, a.y + 6, 18, 6)
-            ctx.fillRect(a.x, a.y + 12, 30, 4)
-            ctx.fillRect(a.x + 4, a.y + 16, 6, 4)
-            ctx.fillRect(a.x + 20, a.y + 16, 6, 4)
+            ctx.beginPath()
+            ctx.moveTo(a.x + 14, a.y)
+            ctx.lineTo(a.x + 26, a.y + 8)
+            ctx.lineTo(a.x + 22, a.y + 18)
+            ctx.lineTo(a.x + 6, a.y + 18)
+            ctx.lineTo(a.x + 2, a.y + 8)
+            ctx.closePath()
+            ctx.fill()
+            ctx.fillStyle = '#000'
+            ctx.fillRect(a.x + 10, a.y + 10, 4, 4)
+            ctx.fillRect(a.x + 16, a.y + 10, 4, 4)
+            ctx.fillStyle = ALIEN_COLORS[a.kind]
           }
         }
       }
 
       for (const p of s.powerups) {
-        ctx.fillStyle = p.type === 'laser' ? '#ff00ff' : '#00ffff'
-        ctx.fillRect(p.x, p.y, 12, 12)
+        ctx.fillStyle = p.type === 'laser' ? '#ff33ff' : '#33ffff'
+        ctx.fillRect(p.x, p.y, 14, 14)
         ctx.fillStyle = '#000'
-        ctx.font = '8px "Share Tech Mono", monospace'
-        ctx.fillText(p.type === 'laser' ? 'L' : 'S', p.x + 3, p.y + 9)
+        ctx.font = '9px "Share Tech Mono", monospace'
+        ctx.fillText(p.type === 'laser' ? 'L' : 'D', p.x + 4, p.y + 10)
       }
 
+      // Player - sleek ship
       ctx.fillStyle = '#33ff66'
       const px = s.player.x, py = s.player.y
-      ctx.fillRect(px + 20, py, 4, 8)
-      ctx.fillRect(px + 14, py + 8, 16, 4)
-      ctx.fillRect(px + 8, py + 12, 28, 4)
-      ctx.fillRect(px, py + 16, 44, 2)
+      ctx.beginPath()
+      ctx.moveTo(px + PLAYER_W / 2, py)
+      ctx.lineTo(px + PLAYER_W - 4, py + PLAYER_H - 6)
+      ctx.lineTo(px + PLAYER_W - 12, py + PLAYER_H)
+      ctx.lineTo(px + 12, py + PLAYER_H)
+      ctx.lineTo(px + 4, py + PLAYER_H - 6)
+      ctx.closePath()
+      ctx.fill()
+      ctx.fillStyle = '#88ffcc'
+      ctx.beginPath()
+      ctx.arc(px + PLAYER_W / 2, py + PLAYER_H - 10, 4, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#66ff88'
+      ctx.fillRect(px + PLAYER_W / 2 - 2, py + 6, 4, 10)
 
       for (const b of s.bullets) {
-        ctx.fillStyle = b.fromPlayer ? (s.weapon === 'laser' ? '#ff66ff' : '#33ff66') : '#ff4444'
+        ctx.fillStyle = b.fromPlayer ? (s.weapon === 'laser' ? '#ff88ff' : '#88ff88') : '#ff5555'
         ctx.fillRect(b.x, b.y, b.vx !== 0 ? BULLET_W + 1 : BULLET_W, BULLET_H)
       }
 
       ctx.fillStyle = '#33ff66'
       ctx.font = '12px "Share Tech Mono", monospace'
-      ctx.fillText('SCORE:' + s.score, 10, 18)
-      ctx.fillText('LIVES:' + '♥'.repeat(s.lives), 10, 34)
-      ctx.fillText('LEVEL:' + s.level, CANVAS_W - 78, 18)
-      ctx.fillText('WPN:' + s.weapon.toUpperCase(), CANVAS_W - 98, 34)
+      ctx.fillText('SCORE:' + s.score, 12, 20)
+      ctx.fillText('LIVES:' + '♥'.repeat(s.lives), 12, 38)
+      ctx.fillText('LEVEL:' + s.level, CANVAS_W - 82, 20)
+      ctx.fillText('WPN:' + s.weapon.toUpperCase(), CANVAS_W - 102, 38)
 
       if (s.paused && !s.gameOver && !s.won) {
-        ctx.fillStyle = 'rgba(0,10,2,0.75)'
+        ctx.fillStyle = 'rgba(0,10,2,0.8)'
         ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
         ctx.fillStyle = '#33ff66'
-        ctx.font = '26px "Share Tech Mono", monospace'
-        const msg = s.level > 1 ? 'LEVEL ' + s.level : 'PAUSED'
+        ctx.font = '28px "Share Tech Mono", monospace'
+        const msg = s.level === 1 ? 'READY' : 'LEVEL ' + s.level
         ctx.fillText(msg, CANVAS_W / 2 - ctx.measureText(msg).width / 2, CANVAS_H / 2)
       }
 
       if (s.gameOver || s.won) {
-        ctx.fillStyle = 'rgba(0,10,2,0.88)'
+        ctx.fillStyle = 'rgba(0,10,2,0.92)'
         ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
         ctx.fillStyle = s.won ? '#33ff66' : '#ff3333'
-        ctx.font = '30px "Share Tech Mono", monospace'
+        ctx.font = '32px "Share Tech Mono", monospace'
         const msg = s.won ? 'MISSION COMPLETE' : 'GAME OVER'
-        ctx.fillText(msg, CANVAS_W / 2 - ctx.measureText(msg).width / 2, CANVAS_H / 2 - 18)
+        ctx.fillText(msg, CANVAS_W / 2 - ctx.measureText(msg).width / 2, CANVAS_H / 2 - 16)
         ctx.font = '13px "Share Tech Mono", monospace'
         ctx.fillStyle = '#1a8f3d'
-        const sub = 'PRESS ENTER TO RESTART'
-        ctx.fillText(sub, CANVAS_W / 2 - ctx.measureText(sub).width / 2, CANVAS_H / 2 + 28)
+        ctx.fillText('PRESS ENTER TO RESTART', CANVAS_W / 2 - ctx.measureText('PRESS ENTER TO RESTART').width / 2, CANVAS_H / 2 + 30)
       }
     }
 
@@ -508,20 +527,16 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
         onTouchMove={(e) => e.preventDefault()}
       />
       <div className="space-invaders-controls">
-        WASD/ARROWS: 8-directional · SPACE/X: shoot · ENTER: pause/restart · ESC/BKSP: back
+        WASD/ARROWS: move · SPACE/X: shoot · ENTER: pause/restart · ESC/BKSP: back
       </div>
       <TouchControls
         zone={{
-          dpad: [
-            { dir: 'up', key: 'ArrowUp' },
-            { dir: 'left', key: 'ArrowLeft' },
-            { dir: 'down', key: 'ArrowDown' },
-            { dir: 'right', key: 'ArrowRight' },
-          ],
+          dpad: [],
           actions: [
-            { key: ' ', label: 'A', variant: 'a' },
+            { key: ' ', label: 'FIRE', variant: 'a' },
             { key: 'Enter', label: 'START', variant: 'start' },
           ],
+          joystick: true,
         }}
       />
       <div className="back-link" onClick={onBack}>{'< cd /back  [BKSP]'}</div>
