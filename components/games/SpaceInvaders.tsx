@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
-import TouchControls from './TouchControls'
+import TouchControls, { type JoystickVector } from './TouchControls'
 
 interface SpaceInvadersProps {
   onBack: () => void
@@ -79,6 +79,7 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
     paused: false,
     lastShot: 0,
     keys: {} as Record<string, boolean>,
+    axis: { x: 0, y: 0 } as JoystickVector,
     frame: 0,
     weapon: 'single' as WeaponType,
     weaponTimer: 0,
@@ -170,6 +171,11 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
 
+    const onJoystick = (e: CustomEvent<JoystickVector>) => {
+      stateRef.current.axis = e.detail
+    }
+    window.addEventListener('arcbyte:joystick', onJoystick)
+
     const shoot = () => {
       const s = stateRef.current
       if (s.gameOver || s.paused || s.won) return
@@ -195,10 +201,18 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
       s.frame++
 
       const spd = 7
-      if (s.keys['ArrowLeft'] || s.keys['a'] || s.keys['A']) s.player.x -= spd
-      if (s.keys['ArrowRight'] || s.keys['d'] || s.keys['D']) s.player.x += spd
-      if (s.keys['ArrowUp'] || s.keys['w'] || s.keys['W']) s.player.y -= spd
-      if (s.keys['ArrowDown'] || s.keys['s'] || s.keys['S']) s.player.y += spd
+      const { x: ax, y: ay } = s.axis
+      if (Math.hypot(ax, ay) > 0.01) {
+        // Joystick analógico: el vector llega normalizado, también en
+        // diagonal, así que la velocidad máxima sigue siendo `spd`.
+        s.player.x += spd * ax
+        s.player.y += spd * ay
+      } else {
+        if (s.keys['ArrowLeft'] || s.keys['a'] || s.keys['A']) s.player.x -= spd
+        if (s.keys['ArrowRight'] || s.keys['d'] || s.keys['D']) s.player.x += spd
+        if (s.keys['ArrowUp'] || s.keys['w'] || s.keys['W']) s.player.y -= spd
+        if (s.keys['ArrowDown'] || s.keys['s'] || s.keys['S']) s.player.y += spd
+      }
       s.player.x = Math.max(6, Math.min(CANVAS_W - PLAYER_W - 6, s.player.x))
       s.player.y = Math.max(20, Math.min(CANVAS_H - PLAYER_H - 4, s.player.y))
 
@@ -512,6 +526,8 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
       window.removeEventListener('keydown', onKey)
+      window.removeEventListener('arcbyte:joystick', onJoystick)
+      stateRef.current.axis = { x: 0, y: 0 }
     }
   }, [initGame, initLevel])
 
@@ -527,7 +543,7 @@ export default function SpaceInvaders({ onBack }: SpaceInvadersProps) {
         onTouchMove={(e) => e.preventDefault()}
       />
       <div className="space-invaders-controls">
-        WASD/ARROWS: move · SPACE/X: shoot · ENTER: pause/restart · ESC/BKSP: back
+        JOYSTICK / WASD / ARROWS: move · SPACE/X: shoot · ENTER: pause/restart · ESC/BKSP: back
       </div>
       <TouchControls
         zone={{
