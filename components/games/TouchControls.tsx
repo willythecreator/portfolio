@@ -2,6 +2,7 @@
 
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -12,6 +13,13 @@ import {
 export type Dir = 'up' | 'down' | 'left' | 'right'
 export type DpadKey = { dir: Dir; key: string }
 export type ActionKey = { key: string; label: string; variant?: 'a' | 'b' | 'c' | 'start' }
+export type JoystickVector = { x: number; y: number }
+
+declare global {
+  interface WindowEventMap {
+    'arcbyte:joystick': CustomEvent<JoystickVector>
+  }
+}
 
 export interface ControllerZone {
   dpad?: DpadKey[]
@@ -481,14 +489,120 @@ function PixelDpad({ dirs }: { dirs: DpadKey[] }) {
   )
 }
 
+/* ── Analog joystick ─────────────────────────────────────────────────────────
+   Pixel-styled thumbstick. Emits a normalized vector on `arcbyte:joystick`
+   (dead zone + radial clamp) so games can drive movement with a real axis. */
+const JOY_DEAD_ZONE = 0.18
+
+function PixelJoystick() {
+  const ref = useRef<HTMLDivElement>(null)
+  const pointerId = useRef<number | null>(null)
+  const [vector, setVector] = useState<JoystickVector>({ x: 0, y: 0 })
+
+  const emit = useCallback((x: number, y: number) => {
+    const next = { x, y }
+    setVector(next)
+    window.dispatchEvent(
+      new CustomEvent<JoystickVector>('arcbyte:joystick', { detail: next })
+    )
+  }, [])
+
+  const update = useCallback(
+    (clientX: number, clientY: number) => {
+      const el = ref.current
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const radius = rect.width * 0.3
+      if (radius <= 0) return
+      const dx = (clientX - (rect.left + rect.width / 2)) / radius
+      const dy = (clientY - (rect.top + rect.height / 2)) / radius
+      const distance = Math.hypot(dx, dy)
+      if (distance < JOY_DEAD_ZONE) {
+        emit(0, 0)
+        return
+      }
+      const strength = Math.min(1, (distance - JOY_DEAD_ZONE) / (1 - JOY_DEAD_ZONE))
+      emit((dx / distance) * strength, (dy / distance) * strength)
+    },
+    [emit]
+  )
+
+  const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (pointerId.current !== null) return
+    pointerId.current = e.pointerId
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    update(e.clientX, e.clientY)
+  }
+
+  const onMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (pointerId.current !== e.pointerId) return
+    e.preventDefault()
+    update(e.clientX, e.clientY)
+  }
+
+  const onUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (pointerId.current !== e.pointerId) return
+    e.preventDefault()
+    e.stopPropagation()
+    pointerId.current = null
+    emit(0, 0)
+  }
+
+  useEffect(() => {
+    const reset = () => {
+      pointerId.current = null
+      emit(0, 0)
+    }
+    window.addEventListener('blur', reset)
+    return () => {
+      window.removeEventListener('blur', reset)
+      emit(0, 0)
+    }
+  }, [emit])
+
+  const active = Math.hypot(vector.x, vector.y) > 0.01
+
+  return (
+    <div
+      ref={ref}
+      className={`pixel-joystick${active ? ' active' : ''}`}
+      onPointerDown={onDown}
+      onPointerMove={onMove}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+      onLostPointerCapture={onUp}
+      onContextMenu={(e) => e.preventDefault()}
+      role="presentation"
+    >
+      <PixelSprite sprite={BTN_RING} className="joy-ring" width={180} />
+      <PixelSprite sprite={BTN_FACE} className="joy-face" width={180} />
+      <span className="joy-guides" aria-hidden="true">
+        <span className="joy-guide joy-guide-h" />
+        <span className="joy-guide joy-guide-v" />
+      </span>
+      <span
+        className="joy-knob"
+        style={{ left: `${50 + vector.x * 30}%`, top: `${50 + vector.y * 30}%` }}
+        aria-hidden="true"
+      >
+        <PixelSprite sprite={BTN_RING} className="joy-knob-ring" width={72} />
+        <PixelSprite sprite={BTN_FACE} className="joy-knob-face" width={72} />
+      </span>
+      <span className="joy-label" aria-hidden="true">MOVE</span>
+    </div>
+  )
+}
+
 export default function TouchControls({ zone }: TouchControlsProps) {
   const onPress = useCallback((key: string) => dispatch('keydown', key), [])
   const onRelease = useCallback((key: string) => dispatch('keyup', key), [])
   const dpad = useMemo(() => zone.dpad ?? [], [zone.dpad])
 
   return (
-    <div className="touch-controls" aria-hidden="true">
-      <PixelDpad dirs={dpad} />
+    <div className={`touch-controls${zone.joystick ? ' touch-controls-joystick' : ''}`} aria-hidden="true">
+      {zone.joystick ? <PixelJoystick /> : dpad.length > 0 ? <PixelDpad dirs={dpad} /> : null}
       <div className="pixel-actions">
         {zone.actions?.map((a) => (
           <ActionButton

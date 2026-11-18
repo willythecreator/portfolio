@@ -97,6 +97,24 @@ body {
   touch-action: pan-y;
 }
 
+/* Repeated taps must never produce a text selection / callout / double-tap
+   zoom inside the game surfaces. Installed by lib/touchGuard.ts. */
+.no-text-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+.no-text-select *,
+.no-text-select *::before,
+.no-text-select *::after {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 @media (min-width: 768px) {
   .content {
     padding: 20px 24px;
@@ -1139,6 +1157,116 @@ body {
   fill: #eaffe9;
 }
 
+/* Analog joystick: same pixel well/knob sprites, driven by a normalized axis */
+.pixel-joystick {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  flex: 0 0 auto;
+  touch-action: none;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  image-rendering: pixelated;
+}
+
+.pixel-joystick > svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  shape-rendering: crispEdges;
+  image-rendering: pixelated;
+}
+
+.joy-ring {
+  filter: drop-shadow(5px 5px 0 #000);
+}
+
+.joy-ring rect {
+  fill: #1a8f3d;
+}
+
+.joy-face rect {
+  fill: #04160a;
+}
+
+.joy-guides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.joy-guide {
+  position: absolute;
+  background: rgba(51, 255, 102, 0.2);
+}
+
+.joy-guide-h {
+  left: 14%;
+  right: 14%;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+.joy-guide-v {
+  top: 14%;
+  bottom: 14%;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+}
+
+.joy-knob {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  filter: drop-shadow(3px 3px 0 #000);
+  transition: left 0.04s linear, top 0.04s linear;
+}
+
+.joy-knob svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  shape-rendering: crispEdges;
+  image-rendering: pixelated;
+}
+
+.joy-knob-ring rect {
+  fill: var(--arcbyte-green);
+}
+
+.joy-knob-face rect {
+  fill: #07230e;
+}
+
+.pixel-joystick.active .joy-knob {
+  filter: drop-shadow(0 0 8px rgba(51, 255, 102, 0.65)) drop-shadow(3px 3px 0 #000);
+}
+
+.joy-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -14px;
+  color: var(--arcbyte-green-dim);
+  font-family: var(--arcbyte-font);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-align: center;
+  pointer-events: none;
+}
+
 /* Action buttons: A / B / C built from 7x7 pixel sprites (octagon of blocks) */
 .pixel-actions {
   display: grid;
@@ -1287,9 +1415,14 @@ body {
     gap: 14px;
     padding: 6px 10px 14px;
   }
-  .pixel-dpad {
+  .pixel-dpad,
+  .pixel-joystick {
     width: 140px;
     height: 140px;
+  }
+  .joy-knob {
+    width: 56px;
+    height: 56px;
   }
   .pixel-actions {
     grid-template-columns: repeat(2, auto);
@@ -1314,9 +1447,14 @@ body {
     gap: 10px;
     padding: 6px 8px 14px;
   }
-  .pixel-dpad {
+  .pixel-dpad,
+  .pixel-joystick {
     width: 120px;
     height: 120px;
+  }
+  .joy-knob {
+    width: 48px;
+    height: 48px;
   }
   .pixel-actions {
     gap: 10px;
@@ -1614,9 +1752,19 @@ body {
     z-index: 20;
   }
 
-  .pixel-dpad {
+  .pixel-dpad,
+  .pixel-joystick {
     width: 132px;
     height: 132px;
+  }
+
+  .joy-knob {
+    width: 56px;
+    height: 56px;
+  }
+
+  .joy-label {
+    display: none;
   }
 
   .pixel-actions {
